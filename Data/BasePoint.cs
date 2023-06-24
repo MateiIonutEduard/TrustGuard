@@ -11,5 +11,6 @@ namespace TrustGuard.Data
         public bool? IsDeleted { get; set; }
         public int ApplicationId { get; set; }
         public int DomainId { get; set; }
+        public bool? IsSuspicious { get; set; }
     }
 }
