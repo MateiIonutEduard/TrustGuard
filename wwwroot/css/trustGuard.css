@@ -1,25 +1,45 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+}
+
+header, footer {
+    background-color: #657b9f;
+}
+
+.nav-link {
+    color: #ffd3d3 !important;
+}
+
+    .nav-link:hover {
+        color: #d7abab !important;
+    }
+
+.navbar-brand {
+    color: #cfebe7 !important;
+}
+
+.navbar-brand:hover {
+    color: white !important;
 }
 
 #rights {
     text-decoration: none;
     margin-left: 50%;
-    color: #73b3e1;
+    color: #ffd3d3;
     font-weight: bold;
 }
