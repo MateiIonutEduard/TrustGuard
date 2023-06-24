@@ -24,6 +24,17 @@ namespace TrustGuard
             builder.Services.AddSingleton<IAppSettings>(sp =>
                 sp.GetRequiredService<IOptions<AppSettings>>().Value);
 
+            /* admin smtp server settings */
+            builder.Services.Configure<AdminSettings>(
+                    builder.Configuration.GetSection(nameof(AdminSettings)));
+
+            // register smtp settings as singleton service
+            builder.Services.AddSingleton<IAdminSettings>(sp =>
+                sp.GetRequiredService<IOptions<AdminSettings>>().Value);
+
+            /* declares admin service, as singleton service */
+            builder.Services.AddSingleton<IAdminService, AdminService>();
+
             // declares browser support service
             builder.Services.AddSingleton<IBrowserSupportService, BrowserSupportService>();
 
