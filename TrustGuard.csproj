@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="Eduard">
+      <HintPath>..\Eduard\Eduard\bin\Release\net6.0\Eduard.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
