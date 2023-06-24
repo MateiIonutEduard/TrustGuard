@@ -16,3 +16,10 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+#rights {
+    text-decoration: none;
+    margin-left: 50%;
+    color: #73b3e1;
+    font-weight: bold;
+}
