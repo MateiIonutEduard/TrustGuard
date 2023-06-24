@@ -3,12 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TrustGuard.Models;
 using TrustGuard.Services;
+using System.Data;
+using TrustGuard.Environment;
 
 namespace TrustGuard
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -41,10 +43,20 @@ namespace TrustGuard
             // add crypto service required at password encryption
             builder.Services.AddSingleton<ICryptoService, CryptoService>();
 
+            // register application service
+            builder.Services.AddTransient<IApplicationService, ApplicationService>();
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+            /* check if elliptic curves are currently inserted in database */
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                await Guard.UpdateDomainParameters(services);
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
