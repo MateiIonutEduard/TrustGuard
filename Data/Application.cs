@@ -1,4 +1,5 @@
 ﻿#pragma warning disable
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrustGuard.Data
 {
@@ -12,6 +13,9 @@ namespace TrustGuard.Data
         public DateTime? ModifiedAt { get; set; }
         public bool? IsDeleted { get; set; }
         public int DomainId { get; set; }
+        public Domain Domain { get; set; }
+        [ForeignKey("ApplicationId")]
+        public virtual ICollection<BasePoint> BasePoints { get; set; }
         public string Description { get; set; }
         public string? AppLogo { get; set; }
     }

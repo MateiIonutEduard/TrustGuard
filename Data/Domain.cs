@@ -1,4 +1,5 @@
 ﻿#pragma warning disable
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TrustGuard.Data
 {
@@ -13,5 +14,7 @@ namespace TrustGuard.Data
         public string x { get; set; }
         public string y { get; set; }
         public int? count { get; set; }
+        [ForeignKey("DomainId")]
+        public virtual ICollection<Application> Applications { get; set; }
     }
 }
