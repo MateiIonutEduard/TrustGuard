@@ -12,6 +12,7 @@ namespace TrustGuard.Data
         public int ApplicationId { get; set; }
         public Application Application { get; set; }
         public int DomainId { get; set; }
+        public Domain Domain { get; set; }
         public bool? IsSuspicious { get; set; }
     }
 }

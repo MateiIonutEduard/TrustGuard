@@ -18,5 +18,7 @@ namespace TrustGuard.Data
         public virtual ICollection<BasePoint> BasePoints { get; set; }
         public string Description { get; set; }
         public string? AppLogo { get; set; }
+        public int AccountId { get; set; }
+        public Account Account { get; set; }
     }
 }
