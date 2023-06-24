@@ -9,9 +9,11 @@ namespace TrustGuard.Data
         public TrustGuardContext(DbContextOptions<TrustGuardContext> options) : base(options)
         { }
 
+        public DbSet<Domain> Domain { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
+            modelBuilder.Entity<Domain>().ToTable(nameof(Domain));
         }
     }
 }
