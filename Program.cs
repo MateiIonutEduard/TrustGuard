@@ -27,6 +27,9 @@ namespace TrustGuard
             // declares browser support service
             builder.Services.AddSingleton<IBrowserSupportService, BrowserSupportService>();
 
+            // add crypto service required at password encryption
+            builder.Services.AddSingleton<ICryptoService, CryptoService>();
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
