@@ -1,3 +1,6 @@
+using TrustGuard.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace TrustGuard
 {
     public class Program
@@ -5,6 +8,10 @@ namespace TrustGuard
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Add PostgreSQL database linker to entities.
+            builder.Services.AddEntityFrameworkNpgsql().AddDbContext<TrustGuardContext>(opt =>
+                opt.UseNpgsql(builder.Configuration.GetConnectionString("TrustGuard")));
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
