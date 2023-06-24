@@ -1,5 +1,8 @@
 using TrustGuard.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using TrustGuard.Models;
+using TrustGuard.Services;
 
 namespace TrustGuard
 {
@@ -12,6 +15,17 @@ namespace TrustGuard
             // Add PostgreSQL database linker to entities.
             builder.Services.AddEntityFrameworkNpgsql().AddDbContext<TrustGuardContext>(opt =>
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("TrustGuard")));
+
+            // get appSettings section
+            builder.Services.Configure<AppSettings>(
+                    builder.Configuration.GetSection(nameof(AppSettings)));
+
+            // register AppSettings as singleton service
+            builder.Services.AddSingleton<IAppSettings>(sp =>
+                sp.GetRequiredService<IOptions<AppSettings>>().Value);
+
+            // declares browser support service
+            builder.Services.AddSingleton<IBrowserSupportService, BrowserSupportService>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
