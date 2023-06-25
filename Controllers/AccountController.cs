@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TrustGuard.Controllers
 {
@@ -13,5 +14,11 @@ namespace TrustGuard.Controllers
         {
             return View();
         }
-    }
+
+		public async Task<IActionResult> Signout()
+		{
+			await HttpContext.SignOutAsync();
+			return Redirect("/Account/");
+		}
+	}
 }

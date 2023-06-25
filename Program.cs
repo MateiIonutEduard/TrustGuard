@@ -46,8 +46,16 @@ namespace TrustGuard
             // register application service
             builder.Services.AddTransient<IApplicationService, ApplicationService>();
 
-            // Add services to the container.
-            builder.Services.AddControllersWithViews();
+			// Add cookie authentication
+			builder.Services.AddAuthentication("CookieAuthentication")
+				.AddCookie("CookieAuthentication", config =>
+				{
+					config.Cookie.Name = "LoginCookie";
+					config.LoginPath = "/Account";
+				});
+
+			// Add services to the container.
+			builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
