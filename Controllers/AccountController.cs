@@ -42,7 +42,32 @@ namespace TrustGuard.Controllers
 			var identity = new ClaimsIdentity(claims, "User Identity");
 			var userPrincipal = new ClaimsPrincipal(new[] { identity });
 			await HttpContext.SignInAsync(userPrincipal);
-			return Redirect("/Home/Dashboard");
+			return Redirect("/Home/");
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Register(AccountRequestModel accountRequestModel)
+		{
+			AccountResponseModel accountResponseModel = await accountService.SignUpAsync(accountRequestModel);
+			if (accountResponseModel.status == -1)
+			{
+				ViewData["state"] = accountRequestModel;
+				return View("Views/Account/Signup.cshtml", ViewData["state"]);
+			}
+
+			if (accountResponseModel.status <= 0) return Redirect("/Account/Signup/?FailCode=0");
+
+			var claims = new Claim[]
+			{
+				new Claim("id", accountResponseModel.id.Value.ToString()),
+				new Claim(ClaimTypes.Name, accountResponseModel.username),
+				new Claim(ClaimTypes.Email, accountResponseModel.address.ToString())
+			};
+
+			var identity = new ClaimsIdentity(claims, "User Identity");
+			var userPrincipal = new ClaimsPrincipal(new[] { identity });
+			await HttpContext.SignInAsync(userPrincipal);
+			return Redirect("/Home/");
 		}
 
 		public async Task<IActionResult> Signout()

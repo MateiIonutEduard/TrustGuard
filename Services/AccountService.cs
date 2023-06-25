@@ -94,6 +94,7 @@ namespace TrustGuard.Services
 				/* new account was created */
 				accountResponseModel.id = account.Id;
 				accountResponseModel.username = account.Username;
+				accountResponseModel.address = account.Address;
 				accountResponseModel.status = 1;
 			}
 			else
