@@ -27,103 +27,128 @@
 <section style="background-color: transparent;">
     <br /><br />
     <div class="row">
-        <div class="col-1"></div>
+        <div class="col-2"></div>
         <div class="col-8">
-@if (applications != null && applications.Length > 0)
-{
-    <table class="table table-light table-hover" id="products" style="margin-left: 10%;">
-        <thead>
-            <tr>
-                <th style="background-color: #506983; color: white;">#</th>
-                <th style="background-color: #506983; color: white;">App Name</th>
-                <th style="background-color: #506983; color: white;">Client Id</th>
-                <th style="background-color: #506983; color: white;">Created At</th>
-                <th style="background-color: #506983; color: white;">Modified At</th>
-                <th style="background-color: #506983; color: white;">App Type</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (ApplicationViewModel app in applications)
+                <form action="#" method="post" style="margin-left: 20%;">
+                <div class="row align-content-between">
+                    <div class="col-3">
+                        <input type="text" class="form-control" placeholder="App Name" />
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" id="byActivity" name="byActivity" aria-label="byActivity">
+                            <option value="1" selected>Most recent activity</option>
+                            <option value="2">Most recent created</option>
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <select class="form-select" id="appType" name="appType" aria-label="appType">
+                            <option value="1" selected>Web app</option>
+                            <option value="2">Desktop app</option>
+                            <option value="3">Gaming app</option>
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                </form><br/>
+            @if (applications != null && applications.Length > 0)
             {
-                <tr>
-                    <td id="appField">
-                        <a href="/Home/About/?id=@app.Id">
-                            <img src="/Home/Show/?id=@app.Id&logo=true" alt="@app.AppName" width="64" height="64" />
-                        </a>
-                    </td>
-                    <td id="appField">
-                        <small>@app.AppName</small>
-                    </td>
-                    <td id="appField">
-                        <small>@app.ClientId</small>
-                    </td>
-                    <td id="appField">
-                        <small>@app.CreatedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
-                    </td>
-                    <td id="appField">
-                        <small>@app.ModifiedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
-                    </td>
-                    <td id="appField">
-                        @if(app.AppType == 1)
+                <table class="table table-light table-hover" id="products" style="margin-left: 10%;">
+                    <thead>
+                        <tr>
+                            <th style="background-color: #506983; color: white;">#</th>
+                            <th style="background-color: #506983; color: white;">App Name</th>
+                            <th style="background-color: #506983; color: white;">Client Id</th>
+                            <th style="background-color: #506983; color: white;">Created At</th>
+                            <th style="background-color: #506983; color: white;">Modified At</th>
+                            <th style="background-color: #506983; color: white;">App Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ApplicationViewModel app in applications)
                         {
-                            <span class="fa fa-desktop text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                            <tr>
+                                <td id="appField">
+                                    <a href="/Home/About/?id=@app.Id">
+                                        <img src="/Home/Show/?id=@app.Id&logo=true" alt="@app.AppName" width="64" height="64" />
+                                    </a>
+                                </td>
+                                <td id="appField">
+                                    <small>@app.AppName</small>
+                                </td>
+                                <td id="appField">
+                                    <small>@app.ClientId</small>
+                                </td>
+                                <td id="appField">
+                                    <small>@app.CreatedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
+                                </td>
+                                <td id="appField">
+                                    <small>@app.ModifiedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
+                                </td>
+                                <td id="appField">
+                                    @if (app.AppType == 1)
+                                    {
+                                        <span class="fa fa-desktop text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                    }
+                                    else if (app.AppType == 2)
+                                    {
+                                        <span class="fa fa-mobile text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                    }
+                                    else
+                                    {
+                                        <span class="fa fa-gamepad text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                    }
+                                </td>
+                            </tr>
                         }
-                        else if(app.AppType == 2)
+                    </tbody>
+                </table>
+                <div class="row" style="margin-left: 10%; margin-bottom: 4%;">
+                    <div class="col-4">
+                        <span style="font-weight: bold; color: #c2dcfd;">Total <small style="font-weight: bold; color: #52627b !important;">@result.Results</small> Results</span>
+                    </div>
+                    <div class="col-8">
+                        @if (result.Pages > 1)
                         {
-                            <span class="fa fa-mobile text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                            <nav id="navigation">
+                                <ul class="pagination">
+                                    @if (mainPage > 1)
+                                    {
+                                        <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">&lt;&lt;</a></li>
+                                        <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">@previousPage</a></li>
+                                    }
+                                    <li class="page-item active"><a class="page-link" style="color: #ffa571 !important;">@mainPage</a></li>
+
+                                    @if (nextPage <= result.Pages && mainPage < result.Pages)
+                                    {
+                                        <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">@nextPage</a></li>
+                                    }
+
+                                    @if (nextPage <= result.Pages && mainPage < result.Pages)
+                                    {
+                                        <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">&gt;&gt;</a></li>
+                                    }
+                                </ul>
+                            </nav>
+                            <br />
+                            <br />
                         }
-                        else
-                        {
-                            <span class="fa fa-gamepad text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
-                        }
-                    </td>
-                </tr>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
-    <div class="row" style="margin-left: 10%; margin-bottom: 4%;">
-        <div class="col-4">
-            <span style="font-weight: bold; color: #c2dcfd;">Total <small style="font-weight: bold; color: #52627b !important;">@result.Results</small> Results</span>
-        </div>
-        <div class="col-8">
-            @if (result.Pages > 1)
+            else
             {
-                <nav id="navigation">
-                    <ul class="pagination">
-                        @if (mainPage > 1)
-                        {
-                            <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">&lt;&lt;</a></li>
-                            <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">@previousPage</a></li>
-                        }
-                        <li class="page-item active"><a class="page-link" style="color: #ffa571 !important;">@mainPage</a></li>
-
-                        @if (nextPage <= result.Pages && mainPage < result.Pages)
-                        {
-                            <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">@nextPage</a></li>
-                        }
-
-                        @if (nextPage <= result.Pages && mainPage < result.Pages)
-                        {
-                            <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">&gt;&gt;</a></li>
-                        }
-                    </ul>
-                </nav>
-                <br />
-                <br />
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Nu exista produse disponibile</h4>
+                    <p>Momentan, nu au fost adaugate produse, pentru aceasta categorie ori se efectueaza lucrari de mentenanta.<br />Ne cerem scuze pentru inconvenient, vom analiza problema care a aparut, de aceea va rugam sa reveniti mai tarziu.</p>
+                    <hr>
+                    <p class="mb-0">In curand, administratorii vor analiza daca a aparut o problema in privinta produselor disponibile.</p>
+                </div>
             }
         </div>
-    </div>
-}
-else
-{
-    <div class="alert alert-warning" role="alert">
-        <h4 class="alert-heading">Nu exista produse disponibile</h4>
-        <p>Momentan, nu au fost adaugate produse, pentru aceasta categorie ori se efectueaza lucrari de mentenanta.<br />Ne cerem scuze pentru inconvenient, vom analiza problema care a aparut, de aceea va rugam sa reveniti mai tarziu.</p>
-        <hr>
-        <p class="mb-0">In curand, administratorii vor analiza daca a aparut o problema in privinta produselor disponibile.</p>
-    </div>
-}
-</div>
-        <div class="col-1"></div>
+        <div class="col-2"></div>
 </div>
 </section>
