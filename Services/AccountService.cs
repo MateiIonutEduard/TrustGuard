@@ -50,5 +50,60 @@ namespace TrustGuard.Services
 
 			return accountResponseModel;
 		}
+
+		public async Task<AccountResponseModel> SignUpAsync(AccountRequestModel accountRequestModel)
+		{
+			AccountResponseModel accountResponseModel = new AccountResponseModel();
+			if (accountRequestModel.password.CompareTo(accountRequestModel.confirmPassword) != 0)
+			{
+				/* do not match */
+				accountResponseModel.status = -1;
+				return accountResponseModel;
+			}
+			string encryptedPassword = cryptoService.EncryptPassword(accountRequestModel.password);
+			string avatarPath = "./Storage/Account/avatar.png";
+
+			// check if username or password is taken
+			Account account = await guardContext.Account
+				.FirstOrDefaultAsync(e => e.Address == accountRequestModel.address || e.Username == accountRequestModel.username);
+
+			if (account == null)
+			{
+				// copy avatar image first
+				if (accountRequestModel.avatar != null)
+				{
+					avatarPath = $"./Storage/Account/{accountRequestModel.avatar.FileName}";
+					MemoryStream ms = new MemoryStream();
+
+					// save avatar logo at disk
+					await accountRequestModel.avatar.CopyToAsync(ms);
+					System.IO.File.WriteAllBytes(avatarPath, ms.ToArray());
+				}
+
+				account = new Account
+				{
+					Username = accountRequestModel.username,
+					Password = cryptoService.EncryptPassword(accountRequestModel.password),
+					Address = accountRequestModel.address,
+					Avatar = avatarPath
+				};
+
+				guardContext.Account.Add(account);
+				await guardContext.SaveChangesAsync();
+
+				/* new account was created */
+				accountResponseModel.id = account.Id;
+				accountResponseModel.username = account.Username;
+				accountResponseModel.status = 1;
+			}
+			else
+			{
+				/* user account is already registered */
+				accountResponseModel.status = 0;
+			}
+
+			/* response result model */
+			return accountResponseModel;
+		}
 	}
 }
