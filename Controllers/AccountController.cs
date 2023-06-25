@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using TrustGuard.Data;
 using TrustGuard.Models;
 using TrustGuard.Services;
 
@@ -25,7 +26,16 @@ namespace TrustGuard.Controllers
             return View();
         }
 
-		[HttpPost]
+        public async Task<IActionResult> Show(int id)
+        {
+            string filePath = await accountService.GetAccountAvatarAsync(id);
+            int index = filePath.LastIndexOf(".");
+
+            byte[] data = System.IO.File.ReadAllBytes(filePath);
+            return File(data, $"image/{filePath.Substring(index + 1)}");
+        }
+
+        [HttpPost]
 		public async Task<IActionResult> Signin(AccountRequestModel accountRequestModel)
 		{
 			AccountResponseModel accountResponseModel = await accountService.SignInAsync(accountRequestModel);

@@ -18,7 +18,17 @@ namespace TrustGuard.Services
 			this.guardContext = guardContext;
 		}
 
-		public async Task<AccountResponseModel> SignInAsync(AccountRequestModel accountRequestModel)
+        public async Task<string> GetAccountAvatarAsync(int id)
+        {
+            /* get user account */
+            Account? account = await guardContext.Account
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+			return account != null && account.Avatar != null ? account.Avatar
+				: "./Storage/Account/avatar.png";
+        }
+
+        public async Task<AccountResponseModel> SignInAsync(AccountRequestModel accountRequestModel)
 		{
 			Account? account = await guardContext.Account
 				.FirstOrDefaultAsync(e => e.Address == accountRequestModel.address);
@@ -60,8 +70,12 @@ namespace TrustGuard.Services
 				accountResponseModel.status = -1;
 				return accountResponseModel;
 			}
-			string encryptedPassword = cryptoService.EncryptPassword(accountRequestModel.password);
-			string avatarPath = "./Storage/Account/avatar.png";
+
+			/* require password encryption */
+			string encryptedPassword = cryptoService
+				.EncryptPassword(accountRequestModel.password);
+
+			string avatarPath = null;
 
 			// check if username or password is taken
 			Account account = await guardContext.Account
@@ -84,9 +98,12 @@ namespace TrustGuard.Services
 				{
 					Username = accountRequestModel.username,
 					Password = cryptoService.EncryptPassword(accountRequestModel.password),
-					Address = accountRequestModel.address,
-					Avatar = avatarPath
+					Address = accountRequestModel.address
 				};
+
+				/* set account profile image, if does not null */
+				if (!string.IsNullOrEmpty(avatarPath))
+					account.Avatar = avatarPath;
 
 				guardContext.Account.Add(account);
 				await guardContext.SaveChangesAsync();

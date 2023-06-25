@@ -31,12 +31,53 @@
                         </li>
                     </ul>
                 </div>
+                @using TrustGuard.Services;
+                @using System.Security.Claims;
+                @inject IBrowserSupportService browserSupportService;
+                @{
+                    string? userId = Context.User?.Claims?.FirstOrDefault(u => u.Type == "id")?.Value;
+                    string? username = Context.User?.Claims.FirstOrDefault(u => u.Type.Contains("name"))?.Value;
+                    string? address = Context.User?.Claims.FirstOrDefault(u => u.Type == ClaimTypes.Email)?.Value;
+                }
+                @if (!string.IsNullOrEmpty(userId))
+                {
+                    <div class="dropdown" id="accountBox">
+                        <a class="btn dropdown-toggle" href="#" title="@address" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/Account/Show/?id=@userId" width="32" height="32" style="border-radius: 50%;" /> <b style="color: white;">@username</b>
+                        </a>
+
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <li>
+                                <a class="dropdown-item" href="/Home/Create"><i class="fa fa-plus text-light" aria-hidden="true"></i>&nbsp;&nbsp;Adauga</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/Order/"><i class="fa fa-gift text-light" aria-hidden="true"></i>&nbsp;&nbsp;Comenzi</a>
+                            </li>
+                            <li><a class="dropdown-item" href="/Account/Preferences"><i class="fa fa-cog text-light" aria-hidden="true"></i>&nbsp;&nbsp;Preferinte</a></li>
+                            <li><a class="dropdown-item" href="/Account/Signout"><i class="fa fa-sign-out-alt text-light" aria-hidden="true"></i>&nbsp;&nbsp;Sign Out</a></li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        <div class="col-2"></div>
+                        <div class="col-3">
+                            <a class="nav-link" style="margin-left: 30%; color: #76bff3 !important;" href="/Account/">Conectare</a>
+                        </div>
+                        <div class="col-1"></div>
+                        <div class="col-1"><p style="color: white; margin-top: 60%;">sau</p></div>
+                        <div class="col-1"></div>
+                        <div class="col-3">
+                            <a class="nav-link" style="margin-left: -40%; color: #a4e194 !important;" href="/Account/Signup">Inregistrare</a>
+                        </div>
+                        <div class="col-2"></div>
+                    </div>
+                }
             </div>
         </nav>
     </header>
     <div class="container">
-        @using TrustGuard.Services;
-        @inject IBrowserSupportService browserSupportService;
         <main role="main" class="pb-3">
             @if (!browserSupportService.IsBrowserSupported(Context.Request.Headers["User-Agent"].ToString()))
             {

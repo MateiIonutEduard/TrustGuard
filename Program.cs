@@ -54,7 +54,7 @@ namespace TrustGuard
 				.AddCookie("CookieAuthentication", config =>
 				{
 					config.Cookie.Name = "AuthCookie";
-					config.LoginPath = "/Account";
+					config.LoginPath = "/Account/";
 				});
 
 			// Add services to the container.
@@ -82,6 +82,7 @@ namespace TrustGuard
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
