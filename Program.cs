@@ -43,8 +43,11 @@ namespace TrustGuard
             // add crypto service required at password encryption
             builder.Services.AddSingleton<ICryptoService, CryptoService>();
 
-            // register application service
-            builder.Services.AddTransient<IApplicationService, ApplicationService>();
+			// add account service, with all features
+			builder.Services.AddTransient<IAccountService, AccountService>();
+
+			// register application service
+			builder.Services.AddTransient<IApplicationService, ApplicationService>();
 
 			// Add cookie authentication
 			builder.Services.AddAuthentication("CookieAuthentication")
