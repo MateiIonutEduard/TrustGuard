@@ -157,6 +157,26 @@ namespace TrustGuard.Services
             return accountResponseModel;
         }
 
+        public async Task<AccountResponseModel> GetAccountByWebcodeAsync(string securityCode)
+        {
+            Account? account = await guardContext.Account
+                .FirstOrDefaultAsync(e => e.SecurityCode.CompareTo(securityCode) == 0);
+
+            if (account != null)
+            {
+                AccountResponseModel accountResponseModel = new AccountResponseModel();
+                accountResponseModel.username = account.Username;
+
+                accountResponseModel.id = account.Id;
+                accountResponseModel.status = 1;
+
+                accountResponseModel.address = account.Address;
+                return accountResponseModel;
+            }
+
+            return null;
+        }
+
         public async Task<AccountResponseModel> SendWebcodeAsync(string address)
         {
             Account? account = await guardContext.Account

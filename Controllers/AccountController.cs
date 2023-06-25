@@ -26,6 +26,11 @@ namespace TrustGuard.Controllers
             return View();
         }
 
+        public IActionResult Recover()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> Show(int id)
         {
             string filePath = await accountService.GetAccountAvatarAsync(id);
