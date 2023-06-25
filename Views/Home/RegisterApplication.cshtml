@@ -1,0 +1,84 @@
+﻿﻿@using TrustGuard.Data;
+@using TrustGuard.Services;
+@inject IApplicationService productService;
+
+@{
+    ApplicationModel? state = ViewData["state"] as ApplicationModel;
+}
+<section style="background-color: #bfc1dd;">
+    <br /><br />
+    <div class="row" style="padding-bottom: 6%;">
+        <div class="col-2"></div>
+        <div class="col-8">
+                <form action="/Home/CreateApp" method="post" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-2"></div>
+                        <div class="col-8">
+                            @if (state != null)
+                            {
+                                <div class="form-group">
+                                    <label for="name">Application Name</label>
+                                    <input type="text" id="name" name="name" class="form-control" value="@state.appName" required />
+                                    <small id="help" style="display: block; color: #b32424 !important;" class="form-text text-muted"><i class="fa fa-exclamation-circle" style="color: #e04848 !important;" aria-hidden="true"></i>&nbsp;&nbsp;Produsul exista deja!</small>
+                                </div>
+                                <br />
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" class="form-control" required>@state.description</textarea>
+                                </div>
+                                <br />
+                                <br />
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="file" id="logo" name="logo" class="form-control form-control-sm" required />
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="file" id="poster" name="poster" class="form-control form-control-sm" required />
+                                    </div>
+                                </div>
+
+                                <br />
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <label for="name">Application Name</label>
+                                <input type="text" id="appName" name="appName" class="form-control" required />
+                                    <small id="help" style="display: none; color: #b32424 !important;" class="form-text text-muted"><i class="fa fa-exclamation-circle" style="color: #e04848 !important;" aria-hidden="true"></i>&nbsp;&nbsp;Produsul exista deja!</small>
+                                </div>
+                                <br />
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" class="form-control" required></textarea>
+                                </div>
+                                <br />
+                            <input type="file" id="appLogo" name="appLogo" class="form-control form-control-sm" required />
+                            <br />
+                            <div class="form-group">
+                                <label for="description">Application Type</label><br/>
+                                <select class="form-select" id="appType" name="appType" aria-label="Categoria">
+                                    <option value="1" selected>Web app</option>
+                                    <option value="2">Desktop app</option>
+                                    <option value="3">Gaming app</option>
+                                </select>
+                            </div>
+                                <br />
+                            }
+                            <div class="row">
+                                <div class="col-4"></div>
+                                <div class="col-2">
+                                    <button type="submit" class="btn btn-sm btn-primary">Create</button>
+                                </div>
+                                <div class="col-2">
+                                    <a href="/Home/" type="button" class="btn btn-sm btn-outline-danger">Cancel</a>
+                                </div>
+                                <div class="col-4"></div>
+                            </div>
+                        </div>
+                        <div class="col-2"></div>
+                    </div>
+                </form>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</section>

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using TrustGuard.Data;
 using TrustGuard.Models;
 using TrustGuard.Services;
 

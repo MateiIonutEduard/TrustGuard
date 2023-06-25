@@ -90,3 +90,11 @@ header, footer {
     color: #7f4c50 !important;
     background-color: #d7d7d7 !important;
 }
+
+.note-editable {
+    height: 200px;
+}
+
+#appType {
+    margin-top: 1%;
+}

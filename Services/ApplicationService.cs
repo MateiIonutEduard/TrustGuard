@@ -12,6 +12,8 @@ namespace TrustGuard.Services
         public ApplicationService(TrustGuardContext guardContext)
         { this.guardContext = guardContext; }
 
+
+
         public async Task UpdateDatabase(ECParams[]? args)
         {
             if(args != null && args.Length > 0)
