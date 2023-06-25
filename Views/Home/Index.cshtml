@@ -24,9 +24,14 @@
     if (mainPage <= result.Pages - 1)
         nextPage = mainPage + 1;
 }
+<section style="background-color: transparent;">
+    <br /><br />
+    <div class="row">
+        <div class="col-1"></div>
+        <div class="col-8">
 @if (applications != null && applications.Length > 0)
 {
-    <table class="table table-light table-hover" id="products" style="margin-left: 10%; width: 80%;">
+    <table class="table table-light table-hover" id="products" style="margin-left: 10%;">
         <thead>
             <tr>
                 <th style="background-color: #506983; color: white;">#</th>
@@ -118,3 +123,7 @@ else
         <p class="mb-0">In curand, administratorii vor analiza daca a aparut o problema in privinta produselor disponibile.</p>
     </div>
 }
+</div>
+        <div class="col-1"></div>
+</div>
+</section>
