@@ -123,5 +123,69 @@ namespace TrustGuard.Services
 			/* response result model */
 			return accountResponseModel;
 		}
-	}
+
+        public async Task<AccountResponseModel> SendWelcomeAsync(int id)
+        {
+            Account? account = await guardContext.Account
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            var accountResponseModel = new AccountResponseModel();
+
+            if (account != null)
+            {
+                /* get recovery email template */
+                string message = File.ReadAllText($"./TrustAdmin/welcome.txt");
+                int index = message.IndexOf('{');
+				string body = string.Empty;
+
+                while (index >= 0)
+				{
+                    body = $"{message.Substring(0, index - 1)} {account.Username}{message.Substring(index + 4)}";
+					index = body.IndexOf('{');
+                }
+
+                /* return status code */
+                int res = adminService.SendEmail(account.Address, "TrustGuard Support", body);
+                accountResponseModel.status = res < 1 ? 0 : 1;
+            }
+            else
+            {
+                // cannot find user account
+                accountResponseModel.status = -1;
+            }
+
+            return accountResponseModel;
+        }
+
+        public async Task<AccountResponseModel> SendWebcodeAsync(string address)
+        {
+            Account? account = await guardContext.Account
+                .FirstOrDefaultAsync(e => e.Address.CompareTo(address) == 0);
+
+            var accountResponseModel = new AccountResponseModel();
+
+            if (account != null)
+            {
+                string securityCode = Guid.NewGuid().ToString();
+                account.SecurityCode = securityCode;
+                await guardContext.SaveChangesAsync();
+
+				/* get recovery email template */
+				string message = File.ReadAllText($"./TrustAdmin/recover.txt");
+				int index = message.IndexOf('{');
+
+				/* create email body from template, after that get status code */
+				string body = $"{message.Substring(0, index - 1)} {securityCode}{message.Substring(index + 4)}";
+                int res = adminService.SendEmail(account.Address, "TrustGuard Support", body);
+                accountResponseModel.status = res < 1 ? 0 : 1;
+            }
+            else
+            {
+                // something is wrong, cannot find user account
+                accountResponseModel.status = -1;
+            }
+
+            return accountResponseModel;
+        }
+    }
 }

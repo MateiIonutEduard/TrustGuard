@@ -74,7 +74,10 @@ namespace TrustGuard.Controllers
 				new Claim(ClaimTypes.Email, accountResponseModel.address.ToString())
 			};
 
+			/* send welcome email to new user, and authenticate him */
+			await accountService.SendWelcomeAsync(accountResponseModel.id.Value);
 			var identity = new ClaimsIdentity(claims, "User Identity");
+
 			var userPrincipal = new ClaimsPrincipal(new[] { identity });
 			await HttpContext.SignInAsync(userPrincipal);
 			return Redirect("/Home/");

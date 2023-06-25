@@ -1,0 +1,8 @@
+﻿<p style='color: #272a35;'>
+    Welcome {##}! Thank you for registering a new account on TrunstGuard.<br/>
+    Have a nice day!
+</p><br/>
+<p style='color: #4a606d;'>
+    Best Regards,<br/>
+    <small style='color: #54669f !important; margin-left: 10px;'>TrustGuard</small>
+</p>
