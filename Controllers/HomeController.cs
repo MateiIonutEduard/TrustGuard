@@ -1,16 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using TrustGuard.Models;
+using TrustGuard.Services;
 
 namespace TrustGuard.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        readonly IApplicationService applicationService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IApplicationService applicationService)
         {
-            _logger = logger;
+            this.applicationService = applicationService;
         }
 
         public IActionResult Index()
@@ -26,6 +28,29 @@ namespace TrustGuard.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        [HttpPost, Authorize]
+        public async Task<IActionResult> CreateApp(ApplicationModel appModel)
+        {
+            string? userId = HttpContext.User?.Claims?
+                .FirstOrDefault(u => u.Type == "id")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                appModel.AccountId = Convert.ToInt32(userId);
+
+                bool result = await applicationService
+                    .CreateProductAsync(appModel);
+                if (result) return Redirect($"/Home/");
+                else
+                {
+                    ViewData["state"] = appModel;
+                    return View($"Views/Home/RegisterApplication.cshtml", ViewData["state"]);
+                }
+            }
+            else
+                return Redirect("/Account/");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

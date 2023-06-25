@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Folder Include="Storage\Account\" />
+    <Folder Include="Storage\Projects\" />
   </ItemGroup>
 
   <ItemGroup>
