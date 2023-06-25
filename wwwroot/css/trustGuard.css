@@ -85,3 +85,8 @@ header, footer {
     .fa-mobile:hover {
         color: #a4b2bf;
     }
+
+.alert-danger {
+    color: #7f4c50 !important;
+    background-color: #d7d7d7 !important;
+}

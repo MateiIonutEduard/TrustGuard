@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TrustGuard</title>
+    <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
@@ -35,7 +35,32 @@
         </nav>
     </header>
     <div class="container">
+        @using TrustGuard.Services;
+        @inject IBrowserSupportService browserSupportService;
         <main role="main" class="pb-3">
+            @if (!browserSupportService.IsBrowserSupported(Context.Request.Headers["User-Agent"].ToString()))
+            {
+                <div class="alert alert-danger" role="alert" style="width: 60%; margin-left: 20%;">
+                    <h4 class="alert-heading">Acest browser este depreciat!</h4>
+                    <p>Pentru a beneficia de o buna functionare a acestui website, actualizati acest browser.</p>
+                    <hr>
+                    <p class="mb-0">
+                        <div class="row">
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <a style="text-decoration: none;" href="https://www.google.com/chrome/"><i class="fa fa-chrome fa-sm" style="color: #7777e5;"></i>&nbsp;&nbsp;Chrome</a>
+                            </div>
+                            <div class="col-2">
+                                <a style="text-decoration: none;" href="https://support.apple.com/downloads/safari"><i class="fa fa-safari fa-sm" style="color: #7777e5;"></i>&nbsp;&nbsp;Safari</a>
+                            </div>
+                            <div class="col-2">
+                                <a style="text-decoration: none;" href="https://www.mozilla.org/en-US/firefox/new/"><i class="fa fa-firefox fa-sm" style="color: #7777e5;"></i>&nbsp;&nbsp;Firefox</a>
+                            </div>
+                            <div class="col-2"></div>
+                        </div>
+                    </p>
+                </div>
+            }
             @RenderBody()
         </main>
     </div>
