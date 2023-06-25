@@ -21,6 +21,51 @@ namespace TrustGuard.Services
             rand = RandomNumberGenerator.Create();
         }
 
+        public async Task<Application?> GetApplicationAsync(int id)
+        {
+            Application? application = await guardContext.Application
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            return application;
+        }
+
+        public async Task<ApplicationResultModel> GetApplicationsAsync(int? page)
+        {
+            int index = (page != null && page.Value >= 1) ? page.Value - 1 : 0;
+
+            List<Application> apps = await guardContext.Application
+                .Where(p => (p.IsDeleted != null ? !p.IsDeleted.Value : false))
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            int counter = apps.Count;
+            int totalPages = counter >> 3;
+
+            if ((counter & 0x7) != 0)
+                totalPages++;
+
+            List<ApplicationViewModel> list = apps.Skip(8 * index).Take(8).ToList()
+                .Select(a => new ApplicationViewModel
+                {
+                    Id = a.Id,
+                    AppName = a.AppName,
+                    ClientId = a.ClientId,
+                    CreatedAt = a.CreatedAt,
+                    ModifiedAt = (a.ModifiedAt != null ? a.ModifiedAt.Value : a.CreatedAt),
+                    AppType = a.AppType
+                })
+                .ToList();
+
+            ApplicationResultModel result = new ApplicationResultModel
+            {
+                Pages = totalPages,
+                ApplicationViewModels = list.ToArray(),
+                Results = apps.Count
+            };
+
+            return result;
+        }
+
         public async Task<bool> CreateProductAsync(ApplicationModel appModel)
         {
             Application? app = await guardContext.Application

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using TrustGuard.Data;
 using TrustGuard.Models;
 using TrustGuard.Services;
 
@@ -28,6 +29,28 @@ namespace TrustGuard.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public async Task<IActionResult> Show(int id)
+        {
+            Application? application = await applicationService.GetApplicationAsync(id);
+
+            if (application != null && !string.IsNullOrEmpty(application.AppLogo))
+            {
+                int index = application.AppLogo.LastIndexOf(".");
+                byte[] data = System.IO.File.ReadAllBytes(application.AppLogo);
+                return File(data, $"image/{application.AppLogo.Substring(index + 1)}");
+            }
+            else
+            if (application != null)
+            {
+                string defaultAppLogo = $"./Storage/Projects/defaultApp.png";
+                int index = defaultAppLogo.LastIndexOf(".");
+                byte[] data = System.IO.File.ReadAllBytes(defaultAppLogo);
+                return File(data, $"image/{defaultAppLogo.Substring(index + 1)}");
+            }
+            else
+                return NotFound();
         }
 
         [HttpPost, Authorize]

@@ -119,3 +119,8 @@ header, footer {
 .alert-heading {
     color: #6f758b;
 }
+
+#appField {
+    background-color: #edf5e1;
+    color: #05386b;
+}
