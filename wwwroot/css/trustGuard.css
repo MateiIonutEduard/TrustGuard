@@ -98,3 +98,24 @@ header, footer {
 #appType {
     margin-top: 1%;
 }
+
+#noRights {
+    width: 80%;
+    margin-left: 10%;
+    background-color: #d7d7d7;
+    border: 1px solid #8550b5;
+    margin-top: 20%;
+}
+
+.alert-link {
+    color: #548785;
+    text-decoration: none;
+}
+
+.alert-link:hover {
+    color: #2c5f5d;
+}
+
+.alert-heading {
+    color: #6f758b;
+}

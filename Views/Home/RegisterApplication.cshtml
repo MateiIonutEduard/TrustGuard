@@ -6,7 +6,8 @@
     string? userId = Context.User?.Claims?.FirstOrDefault(u => u.Type == "id")?.Value;
     ApplicationModel? state = ViewData["state"] as ApplicationModel;
 }
-@if(!string.IsNullOrEmpty(userId)) {
+@if(!string.IsNullOrEmpty(userId)) 
+{
     <section style="background-color: #bfc1dd;">
         <br /><br />
         <div class="row" style="padding-bottom: 6%;">
@@ -84,4 +85,19 @@
             <div class="col-2"></div>
         </div>
     </section>
+}
+else 
+{
+    <div class="alert" id="noRights" role="alert">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <h4 class="alert-heading">Sign in</h4>
+                <p>You are not connected, fortunately you can connect easily by accessing this <a href="/Account/" title="Sign in" class="alert-link">link</a>.
+                    <br/>Come back after sign in, to add new application.
+                </p>
+            </div>
+            <div class="col-2"></div>
+        </div>
+    </div>
 }
