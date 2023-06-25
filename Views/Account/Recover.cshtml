@@ -1,1 +1,100 @@
-﻿
+﻿@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor Accessor
+@{
+    ViewData["Title"] = "Recover Account";
+    int step = Context.Request.Query.ContainsKey("step") ? Convert.ToInt32(Context.Request.Query["step"]) : 1;
+
+    int? uid = Context.Request.Query.ContainsKey("uid") ? Convert.ToInt32(Context.Request.Query["uid"]) : null;
+    bool throwError = Context.Request.Query.ContainsKey("error") ? Convert.ToBoolean(Context.Request.Query["error"]) : false;
+
+    string? password = throwError ? Accessor.HttpContext?.Session.GetString("password") : "";
+    string? confirmPassword = throwError ? Accessor.HttpContext?.Session.GetString("confirmPassword") : "";
+    string borderStyle = throwError ? "border: 1px #e74747 solid" : "";
+}
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="~/js/recover.js"></script>
+<div class="form-gap"></div>
+<div class="container" id="model">
+    <br /><br /><br />
+    <div class="row" style="margin-left: 30%;">
+        <div class="col-md-6 col-md-offset-6" style="background-color: #bfc1dd !important;">
+            <div class="panel panel-default" style="margin-top: 10%;">
+                <div class="panel-body">
+                    <div class="text-center">
+                        <h3><i class="fa fa-lock fa-3x" style="color: #5077b3;"></i></h3>
+                        @if (step == 1)
+                        {
+                            <h2 class="text-center">Lost Password?</h2>
+                            <p>You will receive webcode in a few minutes.</p>
+                            <div class="panel-body">
+                                <form action="/Account/Send" role="form" autocomplete="off" class="form" method="post">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-envelope-o text-primary"></i>&nbsp;</span>
+                                            <input id="address" name="address" placeholder="email address" class="form-control" type="email">
+                                        </div>
+                                    </div><br />
+                                    <div class="form-group">
+                                        <input name="recover-submit" style="margin-bottom: 10%;" class="btn btn-lg btn-primary btn-block" value="Send Code" type="submit">
+                                    </div>
+                                    <input type="hidden" class="hide" name="token" id="token" value="">
+                                </form>
+                            </div>
+                        }
+                        else if(step == 2)
+                        {
+                            <h2 class="text-center">The security code has been sent!</h2><br/>
+                            <p>Please enter the security code below to reset your password.</p>
+                            <div class="panel-body">
+                                <form action="/Account/Verify" role="form" autocomplete="off" class="form" method="post">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-code text-primary"></i>&nbsp;</span>
+                                            <input id="webcode" name="webcode" placeholder="Webcode" class="form-control" type="text">
+                                        </div>
+                                    </div><br />
+                                    <div class="form-group">
+                                        <input name="recover-submit" style="margin-bottom: 10%;" class="btn btn-lg btn-primary btn-block" value="Verify" type="submit">
+                                    </div>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <form action="/Account/UpdatePassword" method="post">
+                                <h2 class="formTitle">
+                                    Update Password
+                                </h2>
+                                <br />
+                                <div class="form-group">
+                                    <label class="inputLabel" for="password">New Password</label>
+                                    <input type="password" value="@password" class="form-control form-control-sm" id="password" name="password" placeholder="New Password" required>
+                                </div>
+                                <br/>
+                                <div class="form-group">
+                                    <label class="inputLabel" for="confirmPassword">Confirm Password</label>
+                                    <input type="password" style="@borderStyle" value="@confirmPassword" class="form-control form-control-sm" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required><br />
+                                    @if (throwError)
+                                    {
+                                        <span style="color: #c75555;"><i class="fa fa-exclamation-circle text-danger"></i>&nbsp;&nbsp;Passwords does not match!</span>
+                                    }
+                                </div>
+                                <br />
+                                @if(uid != null)
+                                {
+                                    <input type="hidden" value="@uid" id="id" name="id"/>
+                                }
+                                <div class="form-group">
+                                    <button type="submit" id="submitButton" onclick="validateSignupForm()" class="btn btn-primary">
+                                        <span>Continue</span>
+                                        <span id="loader" style="display: none;"></span>
+                                    </button>
+                                </div><br/>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

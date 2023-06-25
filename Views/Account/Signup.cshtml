@@ -3,7 +3,7 @@
 
 @{
 #pragma warning disable
-	ViewData["Title"] = "Inregistrare";
+	ViewData["Title"] = "Register";
 	int? code = Context.Request.Query.ContainsKey("FailCode") ? Convert.ToInt32(Context.Request.Query["FailCode"]) : null;
 
 	AccountRequestModel? state = ViewData["state"] as AccountRequestModel;

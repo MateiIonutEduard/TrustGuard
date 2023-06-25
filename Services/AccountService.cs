@@ -133,16 +133,10 @@ namespace TrustGuard.Services
 
             if (account != null)
             {
-                /* get recovery email template */
+                /* get welcome email template */
                 string message = File.ReadAllText($"./TrustAdmin/welcome.txt");
                 int index = message.IndexOf('{');
-				string body = string.Empty;
-
-                while (index >= 0)
-				{
-                    body = $"{message.Substring(0, index - 1)} {account.Username}{message.Substring(index + 4)}";
-					index = body.IndexOf('{');
-                }
+				string body = $"{message.Substring(0, index - 1)} {account.Username}{message.Substring(index + 4)}";
 
                 /* return status code */
                 int res = adminService.SendEmail(account.Address, "TrustGuard Support", body);
@@ -154,6 +148,39 @@ namespace TrustGuard.Services
                 accountResponseModel.status = -1;
             }
 
+            return accountResponseModel;
+        }
+
+        public async Task<AccountResponseModel> UpdatePasswordAsync(AccountRequestModel accountRequestModel)
+        {
+			AccountResponseModel accountResponseModel = new AccountResponseModel();
+
+            // passwords does not match
+            if (accountRequestModel.password.CompareTo(accountRequestModel.confirmPassword) != 0)
+                accountResponseModel.status = -1;
+            else
+            {
+                Account? account = await guardContext.Account
+                    .FirstOrDefaultAsync(e => e.Id == accountRequestModel.Id);
+
+                if (account != null)
+                {
+                    // update account info
+                    accountResponseModel.id = account.Id;
+                    accountResponseModel.username = account.Username;
+                    accountResponseModel.address = account.Address;
+
+                    // update password successfully
+                    account.Password = cryptoService.EncryptPassword(accountRequestModel.password);
+                    await guardContext.SaveChangesAsync();
+                    accountResponseModel.status = 1;
+                }
+                else
+                    /* account not found */
+                    accountResponseModel.status = 0;
+            }
+
+            // returns response model to maintains the logic
             return accountResponseModel;
         }
 
@@ -194,8 +221,18 @@ namespace TrustGuard.Services
 				string message = File.ReadAllText($"./TrustAdmin/recover.txt");
 				int index = message.IndexOf('{');
 
-				/* create email body from template, after that get status code */
-				string body = $"{message.Substring(0, index - 1)} {securityCode}{message.Substring(index + 4)}";
+				string body = message;
+				int k = 0;
+
+                while (index >= 0)
+                {
+					string str = k == 0 ? $"{account.Username}" : $">{securityCode}";
+                    body = $"{body.Substring(0, index - 1)} {str}{body.Substring(index + 4)}";
+                    index = body.IndexOf('{');
+					k++;
+                }
+
+                /* create email body from template, after that get status code */
                 int res = adminService.SendEmail(account.Address, "TrustGuard Support", body);
                 accountResponseModel.status = res < 1 ? 0 : 1;
             }

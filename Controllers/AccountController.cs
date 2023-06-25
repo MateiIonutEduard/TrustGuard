@@ -31,6 +31,22 @@ namespace TrustGuard.Controllers
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Send(string address)
+        {
+            AccountResponseModel accountResponseModel = await accountService.SendWebcodeAsync(address);
+            if (accountResponseModel.status == -1) Redirect("/Account/Signup");
+            return Redirect("/Account/Recover/?step=2");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Verify(string webcode)
+        {
+            AccountResponseModel accountResponseModel = await accountService.GetAccountByWebcodeAsync(webcode);
+            if (accountResponseModel != null) return Redirect($"/Account/Recover/?step=3&uid={accountResponseModel.id}");
+            else return Redirect("/Account/");
+        }
+
         public async Task<IActionResult> Show(int id)
         {
             string filePath = await accountService.GetAccountAvatarAsync(id);
@@ -88,7 +104,41 @@ namespace TrustGuard.Controllers
 			return Redirect("/Home/");
 		}
 
-		public async Task<IActionResult> Signout()
+        [HttpPost]
+        public async Task<IActionResult> UpdatePassword(AccountRequestModel accountRequestModel)
+        {
+            AccountResponseModel accountResponseModel = await accountService.UpdatePasswordAsync(accountRequestModel);
+
+            if (accountResponseModel.status == 1)
+            {
+                var claims = new Claim[]
+                {
+                    new Claim("id", accountResponseModel.id.Value.ToString()),
+                    new Claim(ClaimTypes.Name, accountResponseModel.username),
+                    new Claim(ClaimTypes.Email, accountResponseModel.address)
+                };
+
+                var identity = new ClaimsIdentity(claims, "User Identity");
+                var userPrincipal = new ClaimsPrincipal(new[] { identity });
+
+                /* go back to home page */
+                await HttpContext.SignInAsync(userPrincipal);
+                return Redirect("/Home/");
+            }
+            else if (accountResponseModel.status == -1)
+            {
+                int uid = accountRequestModel.Id.Value;
+                HttpContext.Session.SetString("password", accountRequestModel.password);
+
+                HttpContext.Session.SetString("confirmPassword", accountRequestModel.confirmPassword);
+                return Redirect($"/Account/Recover/?step=3&uid={uid}&error=true");
+            }
+            else
+                /* unknown error, go to account login page */
+                return Redirect("/Account/");
+        }
+
+        public async Task<IActionResult> Signout()
 		{
 			await HttpContext.SignOutAsync();
 			return Redirect("/Account/");

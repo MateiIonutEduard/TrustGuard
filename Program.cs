@@ -5,6 +5,7 @@ using TrustGuard.Models;
 using TrustGuard.Services;
 using System.Data;
 using TrustGuard.Environment;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace TrustGuard
 {
@@ -57,8 +58,11 @@ namespace TrustGuard
 					config.LoginPath = "/Account/";
 				});
 
-			// Add services to the container.
-			builder.Services.AddControllersWithViews();
+            /* register session service */
+            builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // Add services to the container.
+            builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
