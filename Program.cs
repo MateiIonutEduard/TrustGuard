@@ -50,7 +50,7 @@ namespace TrustGuard
 			builder.Services.AddAuthentication("CookieAuthentication")
 				.AddCookie("CookieAuthentication", config =>
 				{
-					config.Cookie.Name = "LoginCookie";
+					config.Cookie.Name = "AuthCookie";
 					config.LoginPath = "/Account";
 				});
 
