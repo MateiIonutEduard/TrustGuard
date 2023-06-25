@@ -15,6 +15,7 @@ html {
 
 body {
     margin-bottom: 60px;
+    background-image: linear-gradient(135deg, #657b9f, #ffd3d3);
 }
 
 header, footer {
@@ -33,9 +34,9 @@ header, footer {
     color: #cfebe7 !important;
 }
 
-.navbar-brand:hover {
-    color: white !important;
-}
+    .navbar-brand:hover {
+        color: white !important;
+    }
 
 #rights {
     text-decoration: none;
@@ -43,3 +44,44 @@ header, footer {
     color: #ffd3d3;
     font-weight: bold;
 }
+
+.more {
+    padding-top: 4rem;
+    padding-bottom: 12rem;
+}
+
+.header {
+    padding-top: 15rem;
+    padding-bottom: 12rem;
+    background-color: #ffffff;
+    background-image: url(../images/landing.jpg);
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+    word-wrap: break-word;
+}
+
+#usage {
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.fa-desktop, .fa-mobile, .fa-gamepad {
+    color: #ccdae7;
+    font-size: 56px;
+}
+
+    .fa-gamepad:hover {
+        color: #a4b2bf;
+    }
+
+    .fa-desktop:hover {
+        color: #a4b2bf;
+    }
+
+    .fa-mobile:hover {
+        color: #a4b2bf;
+    }
