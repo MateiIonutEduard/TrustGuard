@@ -3,13 +3,26 @@
 @inject IApplicationService applicationService;
 
 @{
+    #pragma warning disable
     ViewData["Title"] = "My Apps";
     int? page = Context.Request.Query.Keys.Contains("page") 
         ? Convert.ToInt32(Context.Request.Query["page"]) : null;
 
     string? userId = Context.User?.Claims?.FirstOrDefault(u => u.Type == "id")?.Value;
-    ApplicationResultModel result = await applicationService.GetApplicationsAsync(userId, page);
+    AppQueryFilter? filter = ViewData["filter"] as AppQueryFilter;
 
+    ApplicationResultModel result = new ApplicationResultModel();
+    bool appliedFilter = false;
+
+    if (filter != null) 
+    {
+        result = await applicationService.GetAppsByFilterAsync(filter, userId, page);
+        appliedFilter = true;
+    }
+    else
+        result = await applicationService.GetApplicationsAsync(userId, page);
+
+    string appName = appliedFilter ? filter.AppName : "";
     ApplicationViewModel[]? applications = result.ApplicationViewModels;
     int nextPage = 0;
 
@@ -37,19 +50,68 @@
                 <form action="/Home/Search" method="post" style="margin-left: 20%;">
                     <div class="row">
                         <div class="col-3">
-                            <input type="text" class="form-control" placeholder="App Name" />
+                            <input type="text" id="AppName" name="AppName" class="form-control" placeholder="App Name" value="@appName" />
                         </div>
                         <div class="col-3">
-                            <select class="form-select" id="byActivity" name="byActivity" aria-label="byActivity">
-                                <option value="1" selected>Most recent created</option>
-                                <option value="2">Most recent activity</option>
+                            <select class="form-select" id="ActivityType" name="ActivityType" aria-label="byActivity">
+                                @if(appliedFilter && filter.ActivityType == 1)
+                                {
+                                    <option value="1" selected>Most recent created</option>
+                                }
+                                else
+                                {
+                                    if(!appliedFilter)
+                                    {
+                                        <option value="1" selected>Most recent created</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="1">Most recent created</option>
+                                    }
+                                }
+                                @if(appliedFilter && filter.ActivityType == 2)
+                                {
+                                    <option value="2" selected>Most recent activity</option>
+                                }
+                                else
+                                {
+                                    <option value="2">Most recent activity</option>
+                                }
                             </select>
                         </div>
                         <div class="col-3">
-                            <select class="form-select" id="appType" name="appType" aria-label="appType">
-                                <option value="1" selected>Web app</option>
-                                <option value="2">Desktop app</option>
-                                <option value="3">Gaming app</option>
+                            <select class="form-select" id="AppType" name="AppType" aria-label="appType">
+                                @if(appliedFilter && filter.AppType == 1)
+                                {
+                                    <option value="1" selected>Web app</option>
+                                }
+                                else
+                                {
+                                    if(!appliedFilter)
+                                    {
+                                        <option value="1" selected>Web app</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="1">Web app</option>
+                                    }
+                                }
+                                @if (appliedFilter && filter.AppType == 2)
+                                {
+                                    <option value="2" selected>Desktop app</option>
+                                }
+                                else
+                                {
+                                    <option value="2">Desktop app</option>
+                                }
+                                @if (appliedFilter && filter.AppType == 3)
+                                {
+                                    <option value="3" selected>Gaming app</option>
+                                }
+                                else
+                                {
+                                    <option value="3">Gaming app</option>
+                                }
                             </select>
                         </div>
                         <div class="col-2">

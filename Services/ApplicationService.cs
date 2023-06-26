@@ -29,6 +29,88 @@ namespace TrustGuard.Services
             return application;
         }
 
+        public async Task<ApplicationResultModel> GetAppsByFilterAsync(AppQueryFilter filter, string? userId, int? page)
+        {
+            int? uid = !string.IsNullOrEmpty(userId) ? Convert.ToInt32(userId) : null;
+            int index = (page != null && page.Value >= 1) ? page.Value - 1 : 0;
+
+            if (uid != null)
+            {
+                List<Application> apps = new List<Application>();
+
+                if(filter.ActivityType == 1)
+                {
+                    apps = await guardContext.Application
+                        .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
+                        .OrderByDescending(p => p.CreatedAt)
+                        .ToListAsync();
+                }
+                else
+                {
+                    apps = await guardContext.Application
+                        .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
+                        .OrderByDescending(p => p.ModifiedAt != null ? p.ModifiedAt.Value : p.CreatedAt)
+                        .ToListAsync();
+                }
+
+                bool[] marked = new bool[apps.Count];
+                for (int t = 0; t < marked.Length; t++) marked[t] = false;
+
+                /* apply query by app name */
+                if(!string.IsNullOrEmpty(filter.AppName))
+                {
+                    for(int i = 0; i < apps.Count; i++)
+                    {
+                        if (!apps[i].AppName.StartsWith(filter.AppName))
+                            marked[i] = true;
+                    }
+                }
+
+                /* query apps by using app type */
+                for(int j = 0; j < apps.Count; j++)
+                {
+                    if (!marked[j] && filter.AppType != apps[j].AppType)
+                        marked[j] = true;
+                }
+
+                // remove marked apps
+                for(int k = 0; k < apps.Count; k++)
+                {
+                    if (marked[k])
+                        apps.RemoveAt(k);
+                }
+
+                int counter = apps.Count;
+                int totalPages = counter >> 3;
+
+                if ((counter & 0x7) != 0)
+                    totalPages++;
+
+                List<ApplicationViewModel> list = apps.Skip(8 * index).Take(8).ToList()
+                    .Select(a => new ApplicationViewModel
+                    {
+                        Id = a.Id,
+                        AppName = a.AppName,
+                        ClientId = a.ClientId,
+                        CreatedAt = a.CreatedAt,
+                        ModifiedAt = (a.ModifiedAt != null ? a.ModifiedAt.Value : a.CreatedAt),
+                        AppType = a.AppType
+                    })
+                    .ToList();
+
+                ApplicationResultModel result = new ApplicationResultModel
+                {
+                    Pages = totalPages,
+                    ApplicationViewModels = list.ToArray(),
+                    Results = apps.Count
+                };
+
+                return result;
+            }
+
+            return null;
+        }
+
         public async Task<bool?> RemoveApplicationAsync(int userId, int appId)
         {
             Application? project = await guardContext.Application
