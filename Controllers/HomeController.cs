@@ -97,6 +97,22 @@ namespace TrustGuard.Controllers
                 return Redirect("/Account/");
         }
 
+        [HttpPost, Authorize]
+        public IActionResult Search(AppQueryFilter appQueryFilter)
+        {
+            string? userId = HttpContext.User?.Claims?
+                .FirstOrDefault(u => u.Type == "id")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                int UserId = Convert.ToInt32(userId);
+                ViewData["filter"] = appQueryFilter;
+                return View("Views/Home/Index.cshtml", ViewData["filter"]);
+            }
+            else
+                return Redirect("/Account/");
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
