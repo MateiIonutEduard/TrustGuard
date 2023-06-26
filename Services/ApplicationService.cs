@@ -29,6 +29,28 @@ namespace TrustGuard.Services
             return application;
         }
 
+        public async Task<bool?> RemoveApplicationAsync(int userId, int appId)
+        {
+            Application? project = await guardContext.Application
+                .FirstOrDefaultAsync(p => p.Id == appId && (p.IsDeleted != null ? !p.IsDeleted.Value : false));
+
+            if(project != null)
+            {
+                if(project.AccountId == userId)
+                {
+                    /* disable project only */
+                    project.IsDeleted = true;
+                    await guardContext.SaveChangesAsync();
+                }
+
+                /* no rights */
+                return false;
+            }
+
+            /* project probably existed in the past */
+            return null;
+        }
+
         public async Task<ApplicationResultModel> GetApplicationsAsync(string? userId, int? page)
         {
             int? uid = !string.IsNullOrEmpty(userId) ? Convert.ToInt32(userId) : null;
