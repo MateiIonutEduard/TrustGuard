@@ -8,7 +8,7 @@
         ? Convert.ToInt32(Context.Request.Query["page"]) : null;
 
     string? userId = Context.User?.Claims?.FirstOrDefault(u => u.Type == "id")?.Value;
-    ApplicationResultModel result = await applicationService.GetApplicationsAsync(page);
+    ApplicationResultModel result = await applicationService.GetApplicationsAsync(userId, page);
 
     ApplicationViewModel[]? applications = result.ApplicationViewModels;
     int nextPage = 0;

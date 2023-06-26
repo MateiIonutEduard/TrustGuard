@@ -29,41 +29,47 @@ namespace TrustGuard.Services
             return application;
         }
 
-        public async Task<ApplicationResultModel> GetApplicationsAsync(int? page)
+        public async Task<ApplicationResultModel> GetApplicationsAsync(string? userId, int? page)
         {
+            int? uid = !string.IsNullOrEmpty(userId) ? Convert.ToInt32(userId) : null;
             int index = (page != null && page.Value >= 1) ? page.Value - 1 : 0;
 
-            List<Application> apps = await guardContext.Application
-                .Where(p => (p.IsDeleted != null ? !p.IsDeleted.Value : false))
-                .OrderByDescending(p => p.CreatedAt)
-                .ToListAsync();
-
-            int counter = apps.Count;
-            int totalPages = counter >> 3;
-
-            if ((counter & 0x7) != 0)
-                totalPages++;
-
-            List<ApplicationViewModel> list = apps.Skip(8 * index).Take(8).ToList()
-                .Select(a => new ApplicationViewModel
-                {
-                    Id = a.Id,
-                    AppName = a.AppName,
-                    ClientId = a.ClientId,
-                    CreatedAt = a.CreatedAt,
-                    ModifiedAt = (a.ModifiedAt != null ? a.ModifiedAt.Value : a.CreatedAt),
-                    AppType = a.AppType
-                })
-                .ToList();
-
-            ApplicationResultModel result = new ApplicationResultModel
+            if (uid != null)
             {
-                Pages = totalPages,
-                ApplicationViewModels = list.ToArray(),
-                Results = apps.Count
-            };
+                List<Application> apps = await guardContext.Application
+                    .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
+                    .OrderByDescending(p => p.CreatedAt)
+                    .ToListAsync();
 
-            return result;
+                int counter = apps.Count;
+                int totalPages = counter >> 3;
+
+                if ((counter & 0x7) != 0)
+                    totalPages++;
+
+                List<ApplicationViewModel> list = apps.Skip(8 * index).Take(8).ToList()
+                    .Select(a => new ApplicationViewModel
+                    {
+                        Id = a.Id,
+                        AppName = a.AppName,
+                        ClientId = a.ClientId,
+                        CreatedAt = a.CreatedAt,
+                        ModifiedAt = (a.ModifiedAt != null ? a.ModifiedAt.Value : a.CreatedAt),
+                        AppType = a.AppType
+                    })
+                    .ToList();
+
+                ApplicationResultModel result = new ApplicationResultModel
+                {
+                    Pages = totalPages,
+                    ApplicationViewModels = list.ToArray(),
+                    Results = apps.Count
+                };
+
+                return result;
+            }
+
+            return null;
         }
 
         public async Task<bool> CreateProductAsync(ApplicationModel appModel)

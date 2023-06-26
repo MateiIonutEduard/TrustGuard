@@ -7,7 +7,7 @@ namespace TrustGuard.Services
     public interface IApplicationService
     {
         Task<Application?> GetApplicationAsync(int id);
-        Task<ApplicationResultModel> GetApplicationsAsync(int? page);
+        Task<ApplicationResultModel> GetApplicationsAsync(string? userId, int? page);
         Task<bool> CreateProductAsync(ApplicationModel appModel);
         Task UpdateDatabase(ECParams[]? args);
     }

@@ -21,6 +21,11 @@ namespace TrustGuard.Controllers
             return View();
         }
 
+        public IActionResult Details()
+        {
+            return View();
+        }
+
         public IActionResult RegisterApplication()
         {
             return View();
