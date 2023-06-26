@@ -27,14 +27,14 @@
 <section style="background-color: transparent;">
     <br /><br />
     <div class="row">
-        <div class="col-2"></div>
-        <div class="col-8">
+        <div class="col-1"></div>
+        <div class="col-10">
                 <form action="#" method="post" style="margin-left: 20%;">
-                <div class="row align-content-between">
+                <div class="row">
                     <div class="col-3">
                         <input type="text" class="form-control" placeholder="App Name" />
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <select class="form-select" id="byActivity" name="byActivity" aria-label="byActivity">
                             <option value="1" selected>Most recent activity</option>
                             <option value="2">Most recent created</option>
@@ -56,7 +56,7 @@
                 </form><br/>
             @if (applications != null && applications.Length > 0)
             {
-                <table class="table table-light table-hover" id="products" style="margin-left: 10%;">
+                <table class="table table-light table-hover" id="products">
                     <thead>
                         <tr>
                             <th style="background-color: #506983; color: white;">#</th>
@@ -65,6 +65,7 @@
                             <th style="background-color: #506983; color: white;">Created At</th>
                             <th style="background-color: #506983; color: white;">Modified At</th>
                             <th style="background-color: #506983; color: white;">App Type</th>
+                            <th style ="background-color: #506983; color: white;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -101,6 +102,14 @@
                                     {
                                         <span class="fa fa-gamepad text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
                                     }
+                                </td>
+                                <td id="appField">
+                                    <a class="btn btn-sm" style="text-decoration: none;" href="#" title="View Application">
+                                        <span class="fa fa-eye text-primary"></span>
+                                    </a>
+                                    <a class="btn btn-sm" style="text-decoration: none;" href="#" title="Remove Application">
+                                        <span class="fa fa-trash text-danger"></span>
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -142,13 +151,13 @@
             else
             {
                 <div class="alert alert-warning" role="alert">
-                    <h4 class="alert-heading">Nu exista produse disponibile</h4>
-                    <p>Momentan, nu au fost adaugate produse, pentru aceasta categorie ori se efectueaza lucrari de mentenanta.<br />Ne cerem scuze pentru inconvenient, vom analiza problema care a aparut, de aceea va rugam sa reveniti mai tarziu.</p>
+                    <h4 class="alert-heading">You have no applications available</h4>
+                    <p>There are no applications available, please add the new applications to be able to use the authentication portal.</p>
                     <hr>
-                    <p class="mb-0">In curand, administratorii vor analiza daca a aparut o problema in privinta produselor disponibile.</p>
+                    <p class="mb-0">If everything is in order, the application is probably under maintenance.</p>
                 </div>
             }
         </div>
-        <div class="col-2"></div>
+        <div class="col-1"></div>
 </div>
 </section>
