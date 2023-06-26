@@ -106,11 +106,19 @@
                                 }
                                 @if (appliedFilter && filter.AppType == 3)
                                 {
-                                    <option value="3" selected>Gaming app</option>
+                                    <option value="3" selected>Mobile app</option>
                                 }
                                 else
                                 {
-                                    <option value="3">Gaming app</option>
+                                    <option value="3">Mobile app</option>
+                                }
+                                @if (appliedFilter && filter.AppType == 4)
+                                {
+                                    <option value="4" selected>Gaming app</option>
+                                }
+                                else
+                                {
+                                    <option value="4">Gaming app</option>
                                 }
                             </select>
                         </div>
@@ -157,11 +165,15 @@
                                         <small>@app.ModifiedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
                                     </td>
                                     <td id="appField">
-                                        @if (app.AppType == 1)
+                                        @if(app.AppType == 1)
+                                        {
+                                            <span class="fa fa-globe text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                        }
+                                        else if (app.AppType == 2)
                                         {
                                             <span class="fa fa-desktop text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
                                         }
-                                        else if (app.AppType == 2)
+                                        else if (app.AppType == 3)
                                         {
                                             <span class="fa fa-mobile text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
                                         }

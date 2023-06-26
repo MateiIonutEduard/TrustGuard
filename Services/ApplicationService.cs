@@ -37,8 +37,9 @@ namespace TrustGuard.Services
             if (uid != null)
             {
                 List<Application> apps = new List<Application>();
+                List<Application> projects = new List<Application>();
 
-                if(filter.ActivityType == 1)
+                if (filter.ActivityType == 1)
                 {
                     apps = await guardContext.Application
                         .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
@@ -76,8 +77,8 @@ namespace TrustGuard.Services
                 // remove marked apps
                 for(int k = 0; k < apps.Count; k++)
                 {
-                    if (marked[k])
-                        apps.RemoveAt(k);
+                    if (!marked[k])
+                        projects.Add(apps[k]);
                 }
 
                 int counter = apps.Count;
@@ -86,7 +87,7 @@ namespace TrustGuard.Services
                 if ((counter & 0x7) != 0)
                     totalPages++;
 
-                List<ApplicationViewModel> list = apps.Skip(8 * index).Take(8).ToList()
+                List<ApplicationViewModel> list = projects.Skip(8 * index).Take(8).ToList()
                     .Select(a => new ApplicationViewModel
                     {
                         Id = a.Id,
