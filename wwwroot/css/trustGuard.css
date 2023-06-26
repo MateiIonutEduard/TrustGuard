@@ -124,3 +124,15 @@ header, footer {
     background-color: #edf5e1;
     color: #05386b;
 }
+
+#dismiss {
+    margin-left: 1%;
+    width: 98%;
+    height: 50px;
+    background-color: #aebed9;
+}
+
+#deny:hover {
+    color: #ed6863;
+    font-size: 18px;
+}

@@ -122,13 +122,19 @@
                                 }
                             </select>
                         </div>
-                        <div class="col-2">
+                        <div class="col-3">
                             <button class="btn btn-primary" type="submit">
                                 <i class="fa fa-search" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     </form><br/>
+                    @if (appliedFilter)
+                    {
+                        <div class="alert" id="dismiss">
+                            <a href="/Home/" title="Clear filters" class="text-danger"><i class="fa fa-times" id="deny" aria-hidden="true"></i></a> Clear all project filters
+                        </div>
+                    }
                 @if (applications != null && applications.Length > 0)
                 {
                     <table class="table table-light table-hover" id="products">
