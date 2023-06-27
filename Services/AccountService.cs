@@ -18,6 +18,16 @@ namespace TrustGuard.Services
 			this.guardContext = guardContext;
 		}
 
+        public async Task<Account?> GetAccountAsync(int id)
+        {
+            /* get user account */
+            Account? account = await guardContext.Account
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            account.Password = cryptoService.DecryptPassword(account.Password);
+            return account;
+        }
+
         public async Task<string> GetAccountAvatarAsync(int id)
         {
             /* get user account */

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using TrustGuard.Data;
 using TrustGuard.Models;
 using TrustGuard.Services;
 
@@ -28,6 +30,25 @@ namespace TrustGuard.Controllers
         public IActionResult Recover()
         {
             return View();
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Preferences()
+        {
+            string? userId = HttpContext.User?.Claims?
+                .FirstOrDefault(u => u.Type == "id")?.Value;
+
+            int UserId = Convert.ToInt32(userId);
+            Account account = await accountService.GetAccountAsync(UserId);
+
+            bool failCode = HttpContext.Request.Query.ContainsKey("FailCode") ?
+                Convert.ToBoolean(HttpContext.Request.Query["FailCode"]) : false;
+
+            if (!failCode)
+                HttpContext.Session.Clear();
+
+            ViewData["state"] = account;
+            return View("Views/Account/Preferences.cshtml", ViewData["state"]);
         }
 
         [HttpPost]

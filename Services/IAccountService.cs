@@ -1,10 +1,12 @@
-﻿using TrustGuard.Models;
+﻿using TrustGuard.Data;
+using TrustGuard.Models;
 
 namespace TrustGuard.Services
 {
 	public interface IAccountService
 	{
-		Task<string> GetAccountAvatarAsync(int id);
+		Task<Account?> GetAccountAsync(int id);
+        Task<string> GetAccountAvatarAsync(int id);
 		Task<AccountResponseModel> SendWelcomeAsync(int id);
         Task<AccountResponseModel> SendWebcodeAsync(string address);
         Task<AccountResponseModel> GetAccountByWebcodeAsync(string securityCode);
