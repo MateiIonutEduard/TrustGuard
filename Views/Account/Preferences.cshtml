@@ -20,7 +20,7 @@
 			<div class="col-4"></div>
 			<div class="col-4">
 				<form action="/Account/Preferences" method="post" enctype="multipart/form-data">
-					<div class="row" style="margin-top: 40%; background-color: #eee7d9 !important; padding-top: 12%;">
+					<div class="row" style="margin-top: 40%; background-color: #bfc1dd !important; padding-top: 12%;">
 						<div class="col-2"></div>
 						<div class="col-8">
 							<div class="form-group">
@@ -32,7 +32,7 @@
 								<input type="email" class="form-control form-control-sm" id="address" name="address" value="@account.Address" placeholder="Address" required />
 							</div><br />
 							<div class="form-group">
-								<label for="password">Old Password</label><br />
+								<label for="password">Password</label><br />
 								<input type="password" class="form-control form-control-sm" value="@account.Password" id="password" name="password" placeholder="Password" required />
 							</div><br />
 							<div class="form-group">
@@ -49,7 +49,7 @@
 							</div><br />
 							<div class="row" id="dangerZone">
 								<div class="col-6" style="margin-top: 5%; margin-bottom: 5%;">
-									<span class="text-warn"><small>Remove account!</small></span>
+									<span class="text-warn" style="color: #2d2c55;"><small>Remove account!</small></span>
 								</div>
 								<div class="col-6" style="margin-top: 5%; margin-bottom: 5%;">
 									<a class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#warnUser" onmouseover="OnMouseOver()" onmouseout="OnMouseExit()"><i class="fa fa-trash" id="trash" aria-hidden="true"></i>&nbsp;&nbsp;Remove</a>
@@ -79,7 +79,7 @@
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-outline-success btn-sm" data-bs-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;&nbsp;Cancel</button>
-								<form action="/Account/Remove" method="post">
+								<form action="#" method="post">
 									<button type="submit" class="btn btn-outline-danger btn-sm" onmouseover="OnTrashOver()" onmouseout="OnTrashOut()"><i class="fa fa-trash" id="remove" aria-hidden="true"></i>&nbsp;&nbsp;Remove</button>
 								</form>
 							</div>

@@ -51,7 +51,42 @@ namespace TrustGuard.Controllers
             return View("Views/Account/Preferences.cshtml", ViewData["state"]);
         }
 
-        [HttpPost]
+		[HttpPost, Authorize]
+		public async Task<IActionResult> Preferences(AccountRequestModel accountRequestModel)
+		{
+			string? userId = HttpContext.User?.Claims?
+				.FirstOrDefault(u => u.Type == "id")?.Value;
+
+			int UserId = Convert.ToInt32(userId);
+			accountRequestModel.Id = UserId;
+			AccountResponseModel accountResponseModel = await accountService.UpdateAccountPreferencesAsync(accountRequestModel);
+
+			if (accountResponseModel.status < 0)
+			{
+				/* password does not match */
+				HttpContext.Session.SetString("confirmPassword", accountRequestModel.confirmPassword);
+				return Redirect("/Account/Preferences/?FailCode=true");
+			}
+			/* is logged off */
+			else if (accountResponseModel.status == 0)
+				return Redirect("/Account/");
+
+			/* updated successful */
+			await HttpContext.SignOutAsync();
+			var claims = new Claim[]
+{
+				new Claim("id", accountResponseModel.id.Value.ToString()),
+				new Claim(ClaimTypes.Name, accountResponseModel.username),
+				new Claim(ClaimTypes.Email, accountResponseModel.address)
+            };
+
+			var identity = new ClaimsIdentity(claims, "User Identity");
+			var userPrincipal = new ClaimsPrincipal(new[] { identity });
+			await HttpContext.SignInAsync(userPrincipal);
+			return Redirect("/Home/");
+		}
+
+		[HttpPost]
         public async Task<IActionResult> Send(string address)
         {
             AccountResponseModel accountResponseModel = await accountService.SendWebcodeAsync(address);

@@ -18,7 +18,79 @@ namespace TrustGuard.Services
 			this.guardContext = guardContext;
 		}
 
-        public async Task<Account?> GetAccountAsync(int id)
+		public async Task<AccountResponseModel> UpdateAccountPreferencesAsync(AccountRequestModel accountRequestModel)
+		{
+			Account? account = await guardContext.Account
+				.FirstOrDefaultAsync(e => e.Id == accountRequestModel.Id.Value);
+
+			AccountResponseModel accountResponseModel = new AccountResponseModel();
+			if (accountRequestModel.password.CompareTo(accountRequestModel.confirmPassword) != 0)
+			{
+				/* passwords do not match */
+				accountResponseModel.status = -1;
+				return accountResponseModel;
+			}
+
+			/* update existing account */
+			if (account != null)
+			{
+				string encryptedPassword = cryptoService.EncryptPassword(accountRequestModel.password);
+				string avatarPath = "./Storage/Account/avatar.png";
+				bool updateAvatar = false;
+
+				/* copy avatar image first */
+				if (accountRequestModel.avatar != null)
+				{
+					avatarPath = $"./Storage/Account/{accountRequestModel.avatar.FileName}";
+					MemoryStream ms = new MemoryStream();
+
+					/* save avatar logo, when hash 
+                       have different values */
+					await accountRequestModel.avatar.CopyToAsync(ms);
+					byte[] oldData = await File.ReadAllBytesAsync(account.Avatar);
+
+					string lhash = cryptoService.ComputeHash(oldData);
+					string rhash = cryptoService.ComputeHash(ms.ToArray());
+
+					if (lhash.CompareTo(rhash) != 0)
+					{
+						// remove if avatar is not default image
+						if (!account.Avatar.EndsWith("avatar.png"))
+							File.Delete(account.Avatar);
+
+						// save image to file
+						System.IO.File.WriteAllBytes(avatarPath, ms.ToArray());
+						updateAvatar = true;
+					}
+				}
+
+				account.Address = accountRequestModel.address;
+				account.Username = accountRequestModel.username;
+
+				account.Password = encryptedPassword;
+				account.Address = accountRequestModel.address;
+
+				/* update success */
+				if (updateAvatar) account.Avatar = avatarPath;
+				await guardContext.SaveChangesAsync();
+
+				accountResponseModel.id = account.Id;
+				accountResponseModel.username = account.Username;
+
+				accountResponseModel.address = accountRequestModel.address;
+				accountResponseModel.status = 1;
+			}
+			else
+			{
+				/* account does not exists, create new one */
+				accountResponseModel.status = 0;
+				return accountResponseModel;
+			}
+
+			return accountResponseModel;
+		}
+
+		public async Task<Account?> GetAccountAsync(int id)
         {
             /* get user account */
             Account? account = await guardContext.Account
