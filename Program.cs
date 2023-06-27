@@ -61,6 +61,12 @@ namespace TrustGuard
             /* register session service */
             builder.Services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+            /* Session timeout */
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(2);
+            });
+
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
@@ -85,6 +91,7 @@ namespace TrustGuard
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseSession();
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -22,23 +22,27 @@
     else
         result = await applicationService.GetApplicationsAsync(userId, page);
 
+    ApplicationViewModel[]? applications = new ApplicationViewModel[0];
     string appName = appliedFilter ? filter.AppName : "";
-    ApplicationViewModel[]? applications = result.ApplicationViewModels;
     int nextPage = 0;
 
     int previousPage = page != null ? page.Value - 1 : 1;
     int mainPage = page != null ? page.Value : 1;
 
-    if (previousPage <= 0)
+    if(!string.IsNullOrEmpty(userId)) 
     {
-        previousPage = 1;
+        applications = result.ApplicationViewModels;
+        if (previousPage <= 0)
+        {
+            previousPage = 1;
 
-        if (previousPage < result.Pages)
-            nextPage = 2;
+            if (previousPage < result.Pages)
+                nextPage = 2;
+        }
+
+        if (mainPage <= result.Pages - 1)
+            nextPage = mainPage + 1;
     }
-
-    if (mainPage <= result.Pages - 1)
-        nextPage = mainPage + 1;
 }
 
 @if(!string.IsNullOrEmpty(userId)) {
