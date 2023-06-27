@@ -32,7 +32,24 @@ namespace TrustGuard.Controllers
             return View();
         }
 
-        [Authorize]
+		[Authorize, HttpPost]
+		public async Task<IActionResult> Remove()
+		{
+			string? userId = HttpContext.User?.Claims?
+				.FirstOrDefault(u => u.Type == "id")?.Value;
+
+			if (!string.IsNullOrEmpty(userId))
+			{
+				/* removes specified account */
+				int UserId = Convert.ToInt32(userId);
+				await accountService.RemoveAccountAsync(UserId);
+				await HttpContext.SignOutAsync();
+			}
+
+			return Redirect("/Account/");
+		}
+
+		[Authorize]
         public async Task<IActionResult> Preferences()
         {
             string? userId = HttpContext.User?.Claims?

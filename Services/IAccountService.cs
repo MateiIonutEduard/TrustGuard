@@ -6,7 +6,8 @@ namespace TrustGuard.Services
 	public interface IAccountService
 	{
 		Task<Account?> GetAccountAsync(int id);
-        Task<string> GetAccountAvatarAsync(int id);
+		Task<bool> RemoveAccountAsync(int userId);
+		Task<string> GetAccountAvatarAsync(int id);
 		Task<AccountResponseModel> SendWelcomeAsync(int id);
         Task<AccountResponseModel> SendWebcodeAsync(string address);
         Task<AccountResponseModel> GetAccountByWebcodeAsync(string securityCode);

@@ -1,6 +1,8 @@
 ﻿using TrustGuard.Data;
 using TrustGuard.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+
 #pragma warning disable
 
 namespace TrustGuard.Services
@@ -16,6 +18,49 @@ namespace TrustGuard.Services
 			this.adminService = adminService;
 			this.cryptoService = cryptoService;
 			this.guardContext = guardContext;
+		}
+
+		public async Task<bool> RemoveAccountAsync(int userId)
+		{
+			Account? account = await guardContext.Account
+				.FirstOrDefaultAsync(e => e.Id == userId);
+
+			if (account != null)
+			{
+				Application[] apps = await guardContext.Application
+					.Where(p => p.AccountId == userId)
+					.ToArrayAsync();
+
+                foreach (var app in apps)
+                {
+					/* remove app logo if is not default */
+					if (!string.IsNullOrEmpty(app.AppLogo) && !app.AppLogo.EndsWith("defaultApp.png"))
+						File.Delete(app.AppLogo);
+
+					BasePoint[] basePoints = await guardContext.BasePoint
+						.Where(p => p.ApplicationId == app.Id)
+						.ToArrayAsync();
+
+					/* remove all base points for each app */
+					guardContext.BasePoint.RemoveRange(basePoints);
+					await guardContext.SaveChangesAsync();
+                }
+
+				/* remove applications */
+				guardContext.Application.RemoveRange(apps);
+				await guardContext.SaveChangesAsync();
+
+                /* only if avatar is not default image */
+                if (!account.Avatar.EndsWith("avatar.png"))
+					File.Delete(account.Avatar);
+
+				/* remove account entity from database */
+				guardContext.Account.Remove(account);
+				await guardContext.SaveChangesAsync();
+			}
+
+			// not exists
+			return false;
 		}
 
 		public async Task<AccountResponseModel> UpdateAccountPreferencesAsync(AccountRequestModel accountRequestModel)
