@@ -355,6 +355,15 @@ namespace TrustGuard.Services
 
                 guardContext.BasePoint.Add(G);
                 await guardContext.SaveChangesAsync();
+
+                /* creates new demand that will be processed later */
+                Demand demand = new Demand
+                {
+                    IssuedAt = DateTime.UtcNow
+                };
+
+                guardContext.Demand.Add(demand);
+                await guardContext.SaveChangesAsync();
                 return true;
             }
 
