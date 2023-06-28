@@ -69,7 +69,7 @@ header, footer {
     font-size: 18px;
 }
 
-.fa-desktop, .fa-mobile, .fa-gamepad {
+.fa-desktop, .fa-mobile, .fa-gamepad, .fa-globe {
     color: #ccdae7;
     font-size: 56px;
 }
@@ -86,10 +86,14 @@ header, footer {
         color: #a4b2bf;
     }
 
-.alert-danger {
-    color: #7f4c50 !important;
-    background-color: #d7d7d7 !important;
-}
+    .fa-globe:hover {
+        color: #a4b2bf;
+    }
+
+    .alert-danger {
+        color: #7f4c50 !important;
+        background-color: #d7d7d7 !important;
+    }
 
 .note-editable {
     height: 200px;
