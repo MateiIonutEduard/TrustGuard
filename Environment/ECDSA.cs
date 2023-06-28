@@ -1,10 +1,12 @@
 ﻿using Eduard;
+using System.Security.Cryptography;
+using ECPoint = Eduard.ECPoint;
 
 namespace TrustGuard.Environment
 {
 	public class ECDSA
 	{
-		private System.Security.Cryptography.RandomNumberGenerator rand;
+		private RandomNumberGenerator rand;
 
 		private EllipticCurve curve;
 		private BigInteger secretKey;

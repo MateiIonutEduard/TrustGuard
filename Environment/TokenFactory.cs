@@ -10,10 +10,14 @@ namespace TrustGuard.Environment
 	{
 		private EllipticCurve curve;
 		private ECPoint basePoint;
-		private System.Security.Cryptography.RandomNumberGenerator rand;
+		private RandomNumberGenerator rand;
 
 		public TokenFactory(EllipticCurve curve, ECPoint basePoint)
-		{ }
+		{
+			this.curve = curve;
+			this.basePoint = basePoint;
+			rand = RandomNumberGenerator.Create();
+		}
 
 		private byte[] ComputeHash(byte[] buffer)
 		{
