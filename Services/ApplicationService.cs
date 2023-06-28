@@ -144,6 +144,10 @@ namespace TrustGuard.Services
                 {
                     if (project.AccountId == userId)
                     {
+                        /* remove app logo if is not default */
+                        if (!string.IsNullOrEmpty(project.AppLogo) && !project.AppLogo.EndsWith("defaultApp.png"))
+                            File.Delete(project.AppLogo);
+
                         /* complete removing of the application */
                         guardContext.Application.Remove(project);
                         await guardContext.SaveChangesAsync();
