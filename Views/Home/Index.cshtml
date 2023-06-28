@@ -20,7 +20,7 @@
         appliedFilter = true;
     }
     else
-        result = await applicationService.GetApplicationsAsync(userId, page);
+        result = await applicationService.GetApplicationsAsync(false, userId, page);
 
     ApplicationViewModel[]? applications = new ApplicationViewModel[0];
     string appName = appliedFilter ? filter.AppName : "";

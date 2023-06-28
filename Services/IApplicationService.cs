@@ -8,7 +8,7 @@ namespace TrustGuard.Services
     {
         Task<Application?> GetApplicationAsync(int id);
         Task<bool?> RemoveApplicationAsync(bool complete, int userId, int appId);
-        Task<ApplicationResultModel> GetApplicationsAsync(string? userId, int? page);
+        Task<ApplicationResultModel> GetApplicationsAsync(bool complete, string? userId, int? page);
 		Task<ApplicationResultModel> GetAppsByFilterAsync(AppQueryFilter filter, string? userId, int? page);
         Task<bool> CreateApplicationAsync(ApplicationModel appModel);
         Task UpdateDatabase(ECParams[]? args);
