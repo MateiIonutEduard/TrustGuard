@@ -1,8 +1,11 @@
 ﻿using Eduard;
+using System.Text;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using ECPoint = Eduard.ECPoint;
-using System.Text;
+using System.Reflection.PortableExecutable;
+using System.Security.Claims;
+#pragma warning disable
 
 namespace TrustGuard.Environment
 {
@@ -85,9 +88,27 @@ namespace TrustGuard.Environment
 			return tokenModel;
 		}
 
-		public bool VerifyToken(string accessToken)
+		public int VerifyToken(string secretKey, string accessToken)
 		{
-			return true;
+			string[] parts = accessToken.Split(".");
+			byte[] signature = Convert.FromBase64String(parts[2]);
+
+			string body = $"{parts[0]}.{parts[1]}";
+			byte[] buffer = Encoding.ASCII.GetBytes(body);
+			byte[] hash = ComputeHash(buffer);
+
+			byte[] payloadPart = Convert.FromBase64String(parts[1]);
+			string content = Encoding.ASCII.GetString(payloadPart);
+			Dictionary<string, string> keyValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+			DateTime current = DateTime.UtcNow;
+
+			byte[] secretBytes = Convert.FromBase64String(secretKey);
+			BigInteger k = new BigInteger(secretBytes);
+			
+			/* validate signature */
+			ECDSA ecdsa = new ECDSA(curve, k, basePoint);
+			int res = ecdsa.Verify(hash, signature) ? 1 : -1;
+			return res;
 		}
 
 		/* require header payload to JWT tokens */
