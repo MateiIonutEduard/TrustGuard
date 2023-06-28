@@ -7,5 +7,6 @@ namespace TrustGuard.Environment
 		public string secretKey { get; set; }
 		public string refresh_token { get; set; }
 		public string access_token { get; set; }
+		public int? code { get; set; }
 	}
 }

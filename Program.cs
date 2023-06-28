@@ -6,6 +6,7 @@ using TrustGuard.Services;
 using System.Data;
 using TrustGuard.Environment;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Runtime;
 
 namespace TrustGuard
 {
@@ -27,8 +28,16 @@ namespace TrustGuard
             builder.Services.AddSingleton<IAppSettings>(sp =>
                 sp.GetRequiredService<IOptions<AppSettings>>().Value);
 
-            /* admin smtp server settings */
-            builder.Services.Configure<AdminSettings>(
+			/* get JWT section */
+			builder.Services.Configure<JwtSettings>(
+		        builder.Configuration.GetSection(nameof(JwtSettings)));
+
+			// register AppSettings as singleton service
+			builder.Services.AddSingleton<IJwtSettings>(sp =>
+				sp.GetRequiredService<IOptions<JwtSettings>>().Value);
+
+			/* admin smtp server settings */
+			builder.Services.Configure<AdminSettings>(
                     builder.Configuration.GetSection(nameof(AdminSettings)));
 
             // register smtp settings as singleton service

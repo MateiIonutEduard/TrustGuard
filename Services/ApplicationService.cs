@@ -12,13 +12,15 @@ namespace TrustGuard.Services
 {
     public class ApplicationService : IApplicationService
     {
+        readonly IJwtSettings jwtSettings;
         readonly TrustGuardContext guardContext;
         readonly RandomNumberGenerator rand;
 
-        public ApplicationService(TrustGuardContext guardContext)
+        public ApplicationService(IJwtSettings jwtSettings, TrustGuardContext guardContext)
         { 
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
+            this.jwtSettings = jwtSettings;
         }
 
         public async Task<Application?> GetApplicationAsync(int id)
