@@ -99,8 +99,14 @@ namespace TrustGuard.Environment
 
 			byte[] payloadPart = Convert.FromBase64String(parts[1]);
 			string content = Encoding.ASCII.GetString(payloadPart);
+
 			Dictionary<string, string> keyValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
+			int seconds = Convert.ToInt32(keyValues[ClaimType.Expires]);
+
+			/* check if token expired */
 			DateTime current = DateTime.UtcNow;
+			DateTime signDate = new DateTime(1970, 1, 1).AddSeconds(seconds);
+			if (current.CompareTo(signDate) == 1) return 0;
 
 			byte[] secretBytes = Convert.FromBase64String(secretKey);
 			BigInteger k = new BigInteger(secretBytes);
