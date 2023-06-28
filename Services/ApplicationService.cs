@@ -31,7 +31,7 @@ namespace TrustGuard.Services
             return application;
         }
 
-        public async Task<ApplicationResultModel> GetAppsByFilterAsync(AppQueryFilter filter, string? userId, int? page)
+        public async Task<ApplicationResultModel> GetAppsByFilterAsync(bool complete, AppQueryFilter filter, string? userId, int? page)
         {
             int? uid = !string.IsNullOrEmpty(userId) ? Convert.ToInt32(userId) : null;
             int index = (page != null && page.Value >= 1) ? page.Value - 1 : 0;
@@ -43,17 +43,37 @@ namespace TrustGuard.Services
 
                 if (filter.ActivityType == 1)
                 {
-                    apps = await guardContext.Application
-                        .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
-                        .OrderByDescending(p => p.CreatedAt)
-                        .ToListAsync();
+                    if (!complete)
+                    {
+                        apps = await guardContext.Application
+                            .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
+                            .OrderByDescending(p => p.CreatedAt)
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        apps = await guardContext.Application
+                            .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null && p.IsDeleted.Value))
+                            .OrderByDescending(p => p.CreatedAt)
+                            .ToListAsync();
+                    }
                 }
                 else
                 {
-                    apps = await guardContext.Application
-                        .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
-                        .OrderByDescending(p => p.ModifiedAt != null ? p.ModifiedAt.Value : p.CreatedAt)
-                        .ToListAsync();
+                    if (!complete)
+                    {
+                        apps = await guardContext.Application
+                            .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null ? !p.IsDeleted.Value : false))
+                            .OrderByDescending(p => p.ModifiedAt != null ? p.ModifiedAt.Value : p.CreatedAt)
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        apps = await guardContext.Application
+                            .Where(p => p.AccountId == uid.Value && (p.IsDeleted != null && p.IsDeleted.Value))
+                            .OrderByDescending(p => p.ModifiedAt != null ? p.ModifiedAt.Value : p.CreatedAt)
+                            .ToListAsync();
+                    }
                 }
 
                 bool[] marked = new bool[apps.Count];

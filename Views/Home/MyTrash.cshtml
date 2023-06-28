@@ -16,7 +16,7 @@
 
     if (filter != null)
     {
-        result = await applicationService.GetAppsByFilterAsync(filter, userId, page);
+        result = await applicationService.GetAppsByFilterAsync(true, filter, userId, page);
         appliedFilter = true;
     }
     else
