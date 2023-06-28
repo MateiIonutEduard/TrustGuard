@@ -19,6 +19,13 @@ namespace TrustGuard.Environment
 				claims.Add(claimPair.ClaimName, claimPair.ClaimValue);
 		}
 
+		public void AddClaim(string name, string value)
+		{
+			/* appends claim name with value */
+			if (claims.ContainsKey(name)) return;
+			claims.Add(name, value);
+		}
+
 		public string GetPayload()
 		{
 			/* get JWT token payload, encoded in base64 string */
