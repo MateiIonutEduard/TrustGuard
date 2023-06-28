@@ -7,7 +7,7 @@ namespace TrustGuard.Services
     public interface IApplicationService
     {
         Task<Application?> GetApplicationAsync(int id);
-        Task<bool?> RemoveApplicationAsync(int userId, int appId);
+        Task<bool?> RemoveApplicationAsync(bool complete, int userId, int appId);
         Task<ApplicationResultModel> GetApplicationsAsync(string? userId, int? page);
 		Task<ApplicationResultModel> GetAppsByFilterAsync(AppQueryFilter filter, string? userId, int? page);
         Task<bool> CreateApplicationAsync(ApplicationModel appModel);

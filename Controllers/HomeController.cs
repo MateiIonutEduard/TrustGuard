@@ -21,6 +21,11 @@ namespace TrustGuard.Controllers
             return View();
         }
 
+        public IActionResult MyTrash()
+        {
+            return View();
+        }
+
         public IActionResult Details()
         {
             return View();
@@ -37,7 +42,7 @@ namespace TrustGuard.Controllers
         }
 
         [HttpPost, Authorize]
-        public async Task<IActionResult> RemoveProject(int appId)
+        public async Task<IActionResult> RemoveProject(int appId, bool? complete)
         {
             string? userId = HttpContext.User?.Claims?
                 .FirstOrDefault(u => u.Type == "id")?.Value;
@@ -45,7 +50,8 @@ namespace TrustGuard.Controllers
             if (!string.IsNullOrEmpty(userId))
             {
                 int uid = Convert.ToInt32(userId);
-                await applicationService.RemoveApplicationAsync(uid, appId);
+                bool remove = complete != null ? complete.Value : false;
+                await applicationService.RemoveApplicationAsync(remove, uid, appId);
                 return Redirect("/Home/");
             }
             else

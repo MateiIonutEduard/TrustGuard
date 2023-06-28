@@ -114,22 +114,44 @@ namespace TrustGuard.Services
             return null;
         }
 
-        public async Task<bool?> RemoveApplicationAsync(int userId, int appId)
+        public async Task<bool?> RemoveApplicationAsync(bool complete, int userId, int appId)
         {
-            Application? project = await guardContext.Application
-                .FirstOrDefaultAsync(p => p.Id == appId && (p.IsDeleted != null ? !p.IsDeleted.Value : false));
-
-            if(project != null)
+            /* temporary removing the application */
+            if (!complete)
             {
-                if(project.AccountId == userId)
-                {
-                    /* disable project only */
-                    project.IsDeleted = true;
-                    await guardContext.SaveChangesAsync();
-                }
+                Application? project = await guardContext.Application
+                    .FirstOrDefaultAsync(p => p.Id == appId && (p.IsDeleted != null ? !p.IsDeleted.Value : false));
 
-                /* no rights */
-                return false;
+                if (project != null)
+                {
+                    if (project.AccountId == userId)
+                    {
+                        /* disable project only */
+                        project.IsDeleted = true;
+                        await guardContext.SaveChangesAsync();
+                    }
+
+                    /* no rights */
+                    return false;
+                }
+            }
+            else
+            {
+                Application? project = await guardContext.Application
+                    .FirstOrDefaultAsync(p => p.Id == appId && (p.IsDeleted != null && p.IsDeleted.Value));
+
+                if (project != null)
+                {
+                    if (project.AccountId == userId)
+                    {
+                        /* complete removing of the application */
+                        guardContext.Application.Remove(project);
+                        await guardContext.SaveChangesAsync();
+                    }
+
+                    /* no rights */
+                    return false;
+                }
             }
 
             /* project probably existed in the past */

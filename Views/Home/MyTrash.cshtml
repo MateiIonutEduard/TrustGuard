@@ -1,0 +1,291 @@
+﻿@using TrustGuard.Models;
+@using TrustGuard.Services;
+@inject IApplicationService applicationService;
+
+@{
+#pragma warning disable
+    ViewData["Title"] = "My Apps";
+    int? page = Context.Request.Query.Keys.Contains("page")
+        ? Convert.ToInt32(Context.Request.Query["page"]) : null;
+
+    string? userId = Context.User?.Claims?.FirstOrDefault(u => u.Type == "id")?.Value;
+    AppQueryFilter? filter = ViewData["filter"] as AppQueryFilter;
+
+    ApplicationResultModel result = new ApplicationResultModel();
+    bool appliedFilter = false;
+
+    if (filter != null)
+    {
+        result = await applicationService.GetAppsByFilterAsync(filter, userId, page);
+        appliedFilter = true;
+    }
+    else
+        result = await applicationService.GetApplicationsAsync(userId, page);
+
+    ApplicationViewModel[]? applications = new ApplicationViewModel[0];
+    string appName = appliedFilter ? filter.AppName : "";
+    int nextPage = 0;
+
+    int previousPage = page != null ? page.Value - 1 : 1;
+    int mainPage = page != null ? page.Value : 1;
+
+    if (!string.IsNullOrEmpty(userId))
+    {
+        applications = result.ApplicationViewModels;
+        if (previousPage <= 0)
+        {
+            previousPage = 1;
+
+            if (previousPage < result.Pages)
+                nextPage = 2;
+        }
+
+        if (mainPage <= result.Pages - 1)
+            nextPage = mainPage + 1;
+    }
+}
+
+@if (!string.IsNullOrEmpty(userId))
+{
+    <section style="background-color: transparent;">
+        <br /><br /><br /><br />
+        <div class="row">
+            <div class="col-1"></div>
+            <div class="col-10">
+                <form action="/Home/Search" method="post" style="margin-left: 20%;">
+                    <div class="row">
+                        <div class="col-3">
+                            <input type="text" id="AppName" name="AppName" class="form-control" placeholder="App Name" value="@appName" />
+                        </div>
+                        <div class="col-3">
+                            <select class="form-select" id="ActivityType" name="ActivityType" aria-label="byActivity">
+                                @if (appliedFilter && filter.ActivityType == 1)
+                                {
+                                    <option value="1" selected>Most recent created</option>
+                                }
+                                else
+                                {
+                                    if (!appliedFilter)
+                                    {
+                                        <option value="1" selected>Most recent created</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="1">Most recent created</option>
+                                    }
+                                }
+                                @if (appliedFilter && filter.ActivityType == 2)
+                                {
+                                    <option value="2" selected>Most recent activity</option>
+                                }
+                                else
+                                {
+                                    <option value="2">Most recent activity</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <select class="form-select" id="AppType" name="AppType" aria-label="appType">
+                                @if (appliedFilter && filter.AppType == 1)
+                                {
+                                    <option value="1" selected>Web app</option>
+                                }
+                                else
+                                {
+                                    if (!appliedFilter)
+                                    {
+                                        <option value="1" selected>Web app</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="1">Web app</option>
+                                    }
+                                }
+                                @if (appliedFilter && filter.AppType == 2)
+                                {
+                                    <option value="2" selected>Desktop app</option>
+                                }
+                                else
+                                {
+                                    <option value="2">Desktop app</option>
+                                }
+                                @if (appliedFilter && filter.AppType == 3)
+                                {
+                                    <option value="3" selected>Mobile app</option>
+                                }
+                                else
+                                {
+                                    <option value="3">Mobile app</option>
+                                }
+                                @if (appliedFilter && filter.AppType == 4)
+                                {
+                                    <option value="4" selected>Gaming app</option>
+                                }
+                                else
+                                {
+                                    <option value="4">Gaming app</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fa fa-search" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form><br />
+                @if (appliedFilter)
+                {
+                    <div class="alert" id="dismiss">
+                        <a href="/Home/" title="Clear filters" class="text-danger"><i class="fa fa-times" id="deny" aria-hidden="true"></i></a> Clear all project filters
+                    </div>
+                }
+                @if (applications != null && applications.Length > 0)
+                {
+                    <table class="table table-light table-hover" id="products">
+                        <thead>
+                            <tr>
+                                <th style="background-color: #506983; color: white;">#</th>
+                                <th style="background-color: #506983; color: white;">App Name</th>
+                                <th style="background-color: #506983; color: white;">Client Id</th>
+                                <th style="background-color: #506983; color: white;">Created At</th>
+                                <th style="background-color: #506983; color: white;">Modified At</th>
+                                <th style="background-color: #506983; color: white;">App Type</th>
+                                <th style="background-color: #506983; color: white;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (ApplicationViewModel app in applications)
+                            {
+                                <tr>
+                                    <td id="appField">
+                                        <a href="/Home/About/?id=@app.Id">
+                                            <img src="/Home/Show/?id=@app.Id&logo=true" alt="@app.AppName" width="64" height="64" />
+                                        </a>
+                                    </td>
+                                    <td id="appField">
+                                        <small>@app.AppName</small>
+                                    </td>
+                                    <td id="appField">
+                                        <small>@app.ClientId</small>
+                                    </td>
+                                    <td id="appField">
+                                        <small>@app.CreatedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
+                                    </td>
+                                    <td id="appField">
+                                        <small>@app.ModifiedAt.ToString("dd-MM-yyyy HH:mm tt")</small>
+                                    </td>
+                                    <td id="appField">
+                                        @if (app.AppType == 1)
+                                        {
+                                            <span class="fa fa-globe text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                        }
+                                        else if (app.AppType == 2)
+                                        {
+                                            <span class="fa fa-desktop text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                        }
+                                        else if (app.AppType == 3)
+                                        {
+                                            <span class="fa fa-mobile text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="fa fa-gamepad text-primary" style="font-size: 20px !important; margin-left: 25%; margin-top: 10%;"></span>
+                                        }
+                                    </td>
+                                    <td id="appField">
+                                        <a class="btn btn-sm" style="text-decoration: none;" href="#" title="View Application">
+                                            <span class="fa fa-eye text-primary"></span>
+                                        </a>
+                                        @if (!string.IsNullOrEmpty(userId))
+                                        {
+                                            <button class="btn btn-sm" style="text-decoration: none;" title="Remove Application" data-bs-toggle="modal" data-bs-target="#removeAppModal">
+                                                <span class="fa fa-trash text-danger"></span>
+                                            </button>
+                                            <div class="modal fade" id="removeAppModal" tabindex="-1" aria-labelledby="appModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="appModalLabel">Remove Application</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Are you sure that want to remove completely the application?</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal">
+                                                                <i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel
+                                                            </button>
+                                                            <form action="/Home/RemoveProject" method="post">
+                                                                <input type="hidden" id="appId" name="appId" value="@app.Id" />
+                                                                <input type="hidden" id="complete" name="complete" value="true" />
+                                                                <button class="btn btn-sm btn-danger" type="submit" title="Remove Application">
+                                                                    <i class="fa fa-trash" style="color: white;" aria-hidden="true"></i>&nbsp;Remove
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="row" style="margin-left: 10%; margin-bottom: 4%;">
+                        <div class="col-4">
+                            <span style="font-weight: bold; color: #c2dcfd;">Total <small style="font-weight: bold; color: #52627b !important;">@result.Results</small> Results</span>
+                        </div>
+                        <div class="col-8">
+                            @if (result.Pages > 1)
+                            {
+                                <nav id="navigation">
+                                    <ul class="pagination">
+                                        @if (mainPage > 1)
+                                        {
+                                            <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">&lt;&lt;</a></li>
+                                            <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">@previousPage</a></li>
+                                        }
+                                        <li class="page-item active"><a class="page-link" style="color: #ffa571 !important;">@mainPage</a></li>
+
+                                        @if (nextPage <= result.Pages && mainPage < result.Pages)
+                                        {
+                                            <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">@nextPage</a></li>
+                                        }
+
+                                        @if (nextPage <= result.Pages && mainPage < result.Pages)
+                                        {
+                                            <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">&gt;&gt;</a></li>
+                                        }
+                                    </ul>
+                                </nav>
+                                <br />
+                                <br />
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">You have no applications available</h4>
+                        <p>There are no applications available, please add the new applications to be able to use the authentication portal.</p>
+                        <hr>
+                        <p class="mb-0">If everything is in order, the application is probably under maintenance.</p>
+                    </div>
+                }
+            </div>
+            <div class="col-1"></div>
+        </div>
+    </section>
+}
+else
+{
+    <div class="alert alert-danger" style="width: 60%; margin-left: 15%; margin-top: 20%;" role="alert">
+        <h4 class="alert-heading">Sign in</h4>
+        <p>It must to log in, to manage your preferred applications or to add more features.</p>
+        <hr>
+        <p class="mb-0">You can connect easily by accessing this <a href="/Account/" title="Sign in" class="alert-link">log in</a>.</p>
+    </div>
+}
