@@ -8,6 +8,16 @@ namespace TrustGuard.Environment
 		public TokenFactory()
 		{ }
 
+		public TokenModel SignToken(SecurityTokenDescription securityTokenDescription)
+		{
+			return null;
+		}
+
+		public bool VerifyToken(string accessToken)
+		{
+			return true;
+		}
+
 		/* require header payload to JWT tokens */
 		public string GetHeader()
 		{
