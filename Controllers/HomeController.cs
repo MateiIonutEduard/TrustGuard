@@ -104,7 +104,7 @@ namespace TrustGuard.Controllers
         }
 
         [HttpPost, Authorize]
-        public IActionResult Search(AppQueryFilter appQueryFilter)
+        public IActionResult Search(bool? complete, AppQueryFilter appQueryFilter)
         {
             string? userId = HttpContext.User?.Claims?
                 .FirstOrDefault(u => u.Type == "id")?.Value;
@@ -113,7 +113,8 @@ namespace TrustGuard.Controllers
             {
                 int UserId = Convert.ToInt32(userId);
                 ViewData["filter"] = appQueryFilter;
-                return View("Views/Home/Index.cshtml", ViewData["filter"]);
+                if(complete != null && complete.Value) return View("Views/Home/MyTrash.cshtml", ViewData["filter"]);
+                else return View("Views/Home/Index.cshtml", ViewData["filter"]);
             }
             else
                 return Redirect("/Account/");

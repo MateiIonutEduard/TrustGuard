@@ -52,7 +52,7 @@
         <div class="row">
             <div class="col-1"></div>
             <div class="col-10">
-                <form action="/Home/Search" method="post" style="margin-left: 20%;">
+                <form action="/Home/Search/?complete=true" method="post" style="margin-left: 20%;">
                     <div class="row">
                         <div class="col-3">
                             <input type="text" id="AppName" name="AppName" class="form-control" placeholder="App Name" value="@appName" />
@@ -137,7 +137,7 @@
                 @if (appliedFilter)
                 {
                     <div class="alert" id="dismiss">
-                        <a href="/Home/" title="Clear filters" class="text-danger"><i class="fa fa-times" id="deny" aria-hidden="true"></i></a> Clear all project filters
+                        <a href="/Home/MyTrash" title="Clear filters" class="text-danger"><i class="fa fa-times" id="deny" aria-hidden="true"></i></a> Clear all project filters
                     </div>
                 }
                 @if (applications != null && applications.Length > 0)
