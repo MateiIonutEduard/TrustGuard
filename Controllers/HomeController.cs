@@ -85,7 +85,7 @@ namespace TrustGuard.Controllers
                 appModel.AccountId = Convert.ToInt32(userId);
 
                 bool result = await applicationService
-                    .CreateProductAsync(appModel);
+                    .CreateApplicationAsync(appModel);
                 if (result) return Redirect($"/Home/");
                 else
                 {
