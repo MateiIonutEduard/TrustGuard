@@ -177,7 +177,7 @@ namespace TrustGuard.Services
             return null;
         }
 
-        public async Task<bool> CreateProductAsync(ApplicationModel appModel)
+        public async Task<bool> CreateApplicationAsync(ApplicationModel appModel)
         {
             Application? app = await guardContext.Application
                 .FirstOrDefaultAsync(p => p.AppName == appModel.appName && (p.IsDeleted != null ? !p.IsDeleted.Value : false));
@@ -194,76 +194,83 @@ namespace TrustGuard.Services
                     File.WriteAllBytes(appLogo, ms.ToArray());
                 }
 
-                if (!string.IsNullOrEmpty(appLogo))
+                string clientId = Guid.NewGuid().ToString();
+                List<Domain> domains = await guardContext.Domain.ToListAsync();
+                int index = 0, count = 1000000;
+
+                for (int k = 0; k < domains.Count; k++)
                 {
-                    string clientId = Guid.NewGuid().ToString();
-                    List<Domain> domains = await guardContext.Domain.ToListAsync();
-                    int index = 0, count = 1000000;
+                    int counter = domains[k].count != null
+                        ? domains[k].count.Value : 0;
 
-                    for(int k = 0; k < domains.Count; k++)
+                    if (count > counter)
                     {
-                        int counter = domains[k].count != null 
-                            ? domains[k].count.Value : 0;
-
-                        if(count > counter)
-                        {
-                            count = counter;
-                            index = k;
-                        }
+                        count = counter;
+                        index = k;
                     }
-
-                    BigInteger a = new BigInteger(domains[index].a);
-                    BigInteger b = new BigInteger(domains[index].b);
-                    BigInteger p = new BigInteger(domains[index].p);
-
-                    BigInteger N = new BigInteger(domains[index].N);
-                    EllipticCurve curve = new EllipticCurve(a, b, p, N);
-
-                    BigInteger X = new BigInteger(domains[index].x);
-                    BigInteger Y = new BigInteger(domains[index].y);
-                    ECPoint basePoint = new ECPoint(X, Y);
-
-                    BigInteger t = BigInteger.Next(rand, 1, N - 1);
-                    ECPoint point = CryptoUtil.Multiply(curve, t, basePoint);
-
-                    byte[] buffer = t.ToByteArray();
-                    byte[] all = new byte[32];
-
-                    for (int i = 0; i < buffer.Length; i++)
-                        all[i] = buffer[i];
-
-                    app = new Application
-                    {
-                        AppName = appModel.appName,
-                        Description = appModel.description,
-                        AccountId = appModel.AccountId.Value,
-                        ClientSecret = Convert.ToBase64String(all),
-                        IsDeleted = false,
-                        AppLogo = appLogo,
-                        AppType = appModel.appType,
-                        CreatedAt = DateTime.UtcNow,
-                        DomainId = domains[index].Id,
-                        ClientId = clientId
-                    };
-
-                    guardContext.Application.Add(app);
-                    await guardContext.SaveChangesAsync();
-
-                    BasePoint G = new BasePoint
-                    {
-                        ApplicationId = app.Id,
-                        CreatedAt = app.CreatedAt,
-                        DomainId = domains[index].Id,
-                        x = point.GetAffineX().ToString(),
-                        y = point.GetAffineY().ToString(),
-                        IsSuspicious = false,
-                        IsDeleted = false
-                    };
-
-                    guardContext.BasePoint.Add(G);
-                    await guardContext.SaveChangesAsync();
-                    return true;
                 }
+
+                /* set domain counter */
+                int total = domains[index].count != null
+                    ? domains[index].count.Value + 1 : 1;
+
+                domains[index].count = total;
+                await guardContext.SaveChangesAsync();
+
+                BigInteger a = new BigInteger(domains[index].a);
+                BigInteger b = new BigInteger(domains[index].b);
+                BigInteger p = new BigInteger(domains[index].p);
+
+                BigInteger N = new BigInteger(domains[index].N);
+                EllipticCurve curve = new EllipticCurve(a, b, p, N);
+
+                BigInteger X = new BigInteger(domains[index].x);
+                BigInteger Y = new BigInteger(domains[index].y);
+                ECPoint basePoint = new ECPoint(X, Y);
+
+                BigInteger t = BigInteger.Next(rand, 1, N - 1);
+                ECPoint point = CryptoUtil.Multiply(curve, t, basePoint);
+
+                byte[] buffer = t.ToByteArray();
+                byte[] all = new byte[32];
+
+                for (int i = 0; i < buffer.Length; i++)
+                    all[i] = buffer[i];
+
+                app = new Application
+                {
+                    AppName = appModel.appName,
+                    Description = appModel.description,
+                    AccountId = appModel.AccountId.Value,
+                    ClientSecret = Convert.ToBase64String(all),
+                    IsDeleted = false,
+                    AppType = appModel.appType,
+                    CreatedAt = DateTime.UtcNow,
+                    DomainId = domains[index].Id,
+                    ClientId = clientId
+                };
+
+                /* if appLogo does exists */
+                if (!string.IsNullOrEmpty(appLogo))
+                    app.AppLogo = appLogo;
+
+				guardContext.Application.Add(app);
+                await guardContext.SaveChangesAsync();
+
+                BasePoint G = new BasePoint
+                {
+                    ApplicationId = app.Id,
+                    CreatedAt = app.CreatedAt,
+                    DomainId = domains[index].Id,
+                    x = point.GetAffineX().ToString(),
+                    y = point.GetAffineY().ToString(),
+                    IsSuspicious = false,
+                    IsDeleted = false
+                };
+
+                guardContext.BasePoint.Add(G);
+                await guardContext.SaveChangesAsync();
+                return true;
             }
 
             return false;

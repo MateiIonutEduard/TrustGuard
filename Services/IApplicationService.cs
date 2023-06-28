@@ -10,7 +10,7 @@ namespace TrustGuard.Services
         Task<bool?> RemoveApplicationAsync(int userId, int appId);
         Task<ApplicationResultModel> GetApplicationsAsync(string? userId, int? page);
         Task<ApplicationResultModel> GetAppsByFilterAsync(AppQueryFilter filter, string? userId, int? page);
-        Task<bool> CreateProductAsync(ApplicationModel appModel);
+        Task<bool> CreateApplicationAsync(ApplicationModel appModel);
         Task UpdateDatabase(ECParams[]? args);
     }
 }
