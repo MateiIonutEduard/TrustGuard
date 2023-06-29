@@ -2,18 +2,22 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using TrustGuard.Data;
+using TrustGuard.Environment;
 using TrustGuard.Models;
 using TrustGuard.Services;
+#pragma warning disable
 
 namespace TrustGuard.Controllers
 {
     public class HomeController : Controller
     {
+        readonly IAccountService accountService;
         readonly IApplicationService applicationService;
 
-        public HomeController(IApplicationService applicationService)
+        public HomeController(IAccountService accountService, IApplicationService applicationService)
         {
             this.applicationService = applicationService;
+            this.accountService = accountService;
         }
 
         public IActionResult Index()
@@ -39,6 +43,28 @@ namespace TrustGuard.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Auth(AccountRequestModel accountRequestModel)
+        {
+            AccountResponseModel res = await accountService.SignInAsync(accountRequestModel);
+            if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
+            {
+                if (res.status == 1)
+                {
+                    string userId = res.id.Value.ToString();
+                    string clientId = Request.Headers["ClientId"].ToString();
+
+                    string clientSecret = Request.Headers["ClientSecret"].ToString();
+                    TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
+                    return Ok(token);
+                }
+                else
+                    return Unauthorized();
+            }
+            else
+                return NotFound();
         }
 
         public async Task<IActionResult> Restore(int appId)

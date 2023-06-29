@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using TrustGuard.Models;
 using TrustGuard.Core;
 using ECPoint = Eduard.ECPoint;
+using Newtonsoft.Json.Linq;
 #pragma warning disable
 
 namespace TrustGuard.Services
@@ -21,6 +22,69 @@ namespace TrustGuard.Services
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
             this.jwtSettings = jwtSettings;
+        }
+
+        public async Task<TokenViewModel> AuthenticateAsync(string? userId, string? clientId, string? clientSecret)
+        {
+            if (!string.IsNullOrEmpty(userId))
+            {
+                int uid = Convert.ToInt32(userId);
+                Account? account = await guardContext.Account.FirstOrDefaultAsync(e => e.Id == uid);
+
+                if (account != null)
+                {
+                    var desc = new SecurityTokenDescription
+                    {
+                        Issuer = jwtSettings.Issuer,
+                        Audience = jwtSettings.Audience,
+                        Subject = new SecurityClaimsIdentity()
+                    };
+
+                    desc.Subject.AddClaim("id", userId);
+                    desc.Subject.AddClaim(ClaimType.Subject, account.Username);
+
+                    desc.Subject.AddClaim(ClaimType.Email, account.Address);
+                    TokenModel tokenModel = new TokenModel();
+
+                    Application? application = await guardContext.Application
+                        .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
+
+                    if (application == null)
+                        return null;
+                    else
+                    {
+                        BasePoint basePoint = await guardContext.BasePoint
+                            .FirstOrDefaultAsync(e => e.ApplicationId == application.Id && (e.IsDeleted == null || (e.IsDeleted != null && !e.IsDeleted.Value)));
+
+                        Domain domain = await guardContext.Domain
+                            .FirstOrDefaultAsync(e => e.Id == application.DomainId);
+
+                        BigInteger a = new BigInteger(domain.a.ToString());
+                        BigInteger b = new BigInteger(domain.b.ToString());
+
+                        BigInteger p = new BigInteger(domain.p.ToString());
+                        BigInteger N = new BigInteger(domain.N.ToString());
+                        EllipticCurve curve = new EllipticCurve(a, b, p, N);
+
+                        BigInteger x = new BigInteger(basePoint.x.ToString());
+                        BigInteger y = new BigInteger(basePoint.y.ToString());
+
+                        ECPoint G = new ECPoint(x, y);
+                        TokenFactory tokenFactory = new TokenFactory(curve, G);
+
+                        tokenModel = tokenFactory.SignToken(desc);
+                        TokenViewModel token = new TokenViewModel
+                        {
+                            access_token = tokenModel.access_token,
+                            refresh_token = tokenModel.refresh_token
+                        };
+
+                        return token;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public async Task<Application?> GetApplicationAsync(int id)
