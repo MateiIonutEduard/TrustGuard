@@ -7,6 +7,8 @@ using TrustGuard.Models;
 using TrustGuard.Core;
 using ECPoint = Eduard.ECPoint;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Principal;
 #pragma warning disable
 
 namespace TrustGuard.Services
@@ -63,7 +65,86 @@ namespace TrustGuard.Services
             return -2;
         }
 
-        public async Task<TokenViewModel> AuthenticateAsync(string? userId, string? clientId, string? clientSecret)
+        public async Task<TokenViewModel?> RefreshTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
+        {
+            Application? application = await guardContext.Application
+                .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
+
+            if(application != null)
+            {
+                BasePoint basePoint = await guardContext.BasePoint
+                    .FirstOrDefaultAsync(e => e.ApplicationId == application.Id && (e.IsDeleted == null || (e.IsDeleted != null && !e.IsDeleted.Value)));
+
+                Domain domain = await guardContext.Domain
+                    .FirstOrDefaultAsync(e => e.Id == application.DomainId);
+
+                KeyPair keyPair = await guardContext.KeyPair
+                    .FirstOrDefaultAsync(e => e.AccessToken.CompareTo(accessToken) == 0 && !e.IsRevoked && e.BasePointId == basePoint.Id);
+
+                if(keyPair != null)
+                {
+                    BigInteger a = new BigInteger(domain.a.ToString());
+                    BigInteger b = new BigInteger(domain.b.ToString());
+
+                    BigInteger p = new BigInteger(domain.p.ToString());
+                    BigInteger N = new BigInteger(domain.N.ToString());
+                    EllipticCurve curve = new EllipticCurve(a, b, p, N);
+
+                    BigInteger x = new BigInteger(basePoint.x.ToString());
+                    BigInteger y = new BigInteger(basePoint.y.ToString());
+                    ECPoint G = new ECPoint(x, y);
+
+                    /* verify if valid signature */
+                    TokenFactory tokenFactory = new TokenFactory(curve, G);
+                    int res = tokenFactory.VerifyToken(refreshToken, accessToken);
+
+                    // get user account
+                    Account account = await guardContext.Account
+                        .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+
+                    if(res == 1)
+                    {
+                        var desc = new SecurityTokenDescription
+                        {
+                            Issuer = jwtSettings.Issuer,
+                            Audience = jwtSettings.Audience,
+                            Subject = new SecurityClaimsIdentity()
+                        };
+
+                        desc.Subject.AddClaim("id", account.Id.ToString());
+                        desc.Subject.AddClaim(ClaimType.Subject, account.Username);
+                        desc.Subject.AddClaim(ClaimType.Email, account.Address);
+
+                        TokenModel model = tokenFactory.SignToken(desc);
+                        KeyPair newKeyPair = new KeyPair
+                        {
+                            SecureKey = model.secretKey,
+                            RefreshToken = model.refresh_token,
+                            AccessToken = model.access_token,
+                            BasePointId = basePoint.Id,
+                            AccountId = account.Id,
+                            IsRevoked = false
+                        };
+
+                        /* save keypair to database */
+                        guardContext.KeyPair.Add(newKeyPair);
+                        await guardContext.SaveChangesAsync();
+
+                        TokenViewModel token = new TokenViewModel
+                        {
+                            access_token = model.access_token,
+                            refresh_token = model.refresh_token
+                        };
+
+                        return token;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        public async Task<TokenViewModel?> AuthenticateAsync(string? userId, string? clientId, string? clientSecret)
         {
             if (!string.IsNullOrEmpty(userId))
             {
@@ -88,9 +169,7 @@ namespace TrustGuard.Services
                     Application? application = await guardContext.Application
                         .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
 
-                    if (application == null)
-                        return null;
-                    else
+                    if (application != null)
                     {
                         BasePoint basePoint = await guardContext.BasePoint
                             .FirstOrDefaultAsync(e => e.ApplicationId == application.Id && (e.IsDeleted == null || (e.IsDeleted != null && !e.IsDeleted.Value)));
