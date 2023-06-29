@@ -21,8 +21,18 @@ namespace TrustGuard.Environment
 
 			this.curve = curve;
 			this.publicKey = ECMath.Multiply(curve, secretKey, basePoint);
-			rand = System.Security.Cryptography.RandomNumberGenerator.Create();
+			rand = RandomNumberGenerator.Create();
 		}
+
+		public ECDSA(EllipticCurve curve, ECPoint publicKey, ECPoint basePoint)
+		{
+			this.curve = curve;
+			this.basePoint = basePoint;
+			secretKey = 0;
+
+			this.publicKey = publicKey;
+            rand = RandomNumberGenerator.Create();
+        }
 
 		public byte[] Sign(byte[] buffer)
 		{

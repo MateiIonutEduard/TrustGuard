@@ -88,7 +88,7 @@ namespace TrustGuard.Environment
 			return tokenModel;
 		}
 
-		public int VerifyToken(string secretKey, string accessToken)
+		public int VerifyToken(string publicKey, string accessToken)
 		{
 			string[] parts = accessToken.Split(".");
 			byte[] signature = Convert.FromBase64String(parts[2]);
@@ -108,11 +108,21 @@ namespace TrustGuard.Environment
 			DateTime signDate = new DateTime(1970, 1, 1).AddSeconds(seconds);
 			if (current.CompareTo(signDate) == 1) return 0;
 
-			byte[] secretBytes = Convert.FromBase64String(secretKey);
-			BigInteger k = new BigInteger(secretBytes);
-			
+			byte[] data = Convert.FromBase64String(publicKey);
+			byte[] xdata = new byte[32];
+
+			for (int i = 0; i < 32; i++) xdata[i] = data[i];
+			BigInteger x = new BigInteger(xdata);
+
+			BigInteger N2 = curve.field >> 1;
+			BigInteger y = EllipticCurve.Sqrt(curve.Eval(x), curve.field);
+
+			if (y < N2 && data[32] == 0x03) y = curve.field - y;
+			if (y >= N2 && data[32] == 0x02) y = curve.field - y;
+			ECPoint publicPoint = new ECPoint(x, y);
+
 			/* validate signature */
-			ECDSA ecdsa = new ECDSA(curve, k, basePoint);
+			ECDSA ecdsa = new ECDSA(curve, publicPoint, basePoint);
 			int res = ecdsa.Verify(hash, signature) ? 1 : -1;
 			return res;
 		}
