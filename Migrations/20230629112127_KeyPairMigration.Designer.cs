@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TrustGuard.Data;
@@ -11,9 +12,11 @@ using TrustGuard.Data;
 namespace TrustGuard.Migrations
 {
     [DbContext(typeof(TrustGuardContext))]
-    partial class TrustGuardContextModelSnapshot : ModelSnapshot
+    [Migration("20230629112127_KeyPairMigration")]
+    partial class KeyPairMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
