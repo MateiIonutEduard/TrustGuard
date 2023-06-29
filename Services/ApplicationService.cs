@@ -28,119 +28,114 @@ namespace TrustGuard.Services
 
         public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
         {
-            KeyPair keyPair = await guardContext.KeyPair
-                .FirstOrDefaultAsync(e => e.AccessToken.CompareTo(accessToken) == 0);
+            DomainParametersModel dpm = (
+                from d in await guardContext.Domain.ToListAsync()
+                join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
+                join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
+                join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
+                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+                select new DomainParametersModel
+                {
+                    a = new BigInteger(d.a),
+                    b = new BigInteger(d.b),
+                    p = new BigInteger(d.p),
+                    N = new BigInteger(d.N),
+                    basePoint = new ECPoint(new BigInteger(b.x), new BigInteger(b.y))
+                }).FirstOrDefault();
 
-            if(keyPair != null && !keyPair.IsRevoked)
+            if(dpm != null)
             {
-                BasePoint basePoint = await guardContext.BasePoint
-                    .FirstOrDefaultAsync(e => e.Id == keyPair.BasePointId);
-
-                // domain parameters
-                Domain domain = await guardContext.Domain
-                    .FirstOrDefaultAsync(e => e.Id == basePoint.DomainId);
-
-                BigInteger a = new BigInteger(domain.a.ToString());
-                BigInteger b = new BigInteger(domain.b.ToString());
-
-                BigInteger p = new BigInteger(domain.p.ToString());
-                BigInteger N = new BigInteger(domain.N.ToString());
-                EllipticCurve curve = new EllipticCurve(a, b, p, N);
-
-                BigInteger x = new BigInteger(basePoint.x.ToString());
-                BigInteger y = new BigInteger(basePoint.y.ToString());
-
-                ECPoint G = new ECPoint(x, y);
-                TokenFactory tokenFactory = new TokenFactory(curve, G);
-
                 /* revoke key pair */
+                KeyPair keyPair = await guardContext.KeyPair
+                    .FirstOrDefaultAsync(e => e.RefreshToken.CompareTo(refreshToken) == 0 && !e.IsRevoked);
+
                 keyPair.IsRevoked = true;
                 await guardContext.SaveChangesAsync();
+
+                EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
+                TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
 
                 int result = tokenFactory.VerifyToken(refreshToken, accessToken);
                 return result;
             }
 
-            /* already revoked */
+            /* not exists */
             return -2;
         }
 
         public async Task<TokenViewModel?> RefreshTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
         {
-            Application? application = await guardContext.Application
-                .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
-
-            if(application != null)
-            {
-                BasePoint basePoint = await guardContext.BasePoint
-                    .FirstOrDefaultAsync(e => e.ApplicationId == application.Id && (e.IsDeleted == null || (e.IsDeleted != null && !e.IsDeleted.Value)));
-
-                Domain domain = await guardContext.Domain
-                    .FirstOrDefaultAsync(e => e.Id == application.DomainId);
-
-                KeyPair keyPair = await guardContext.KeyPair
-                    .FirstOrDefaultAsync(e => e.AccessToken.CompareTo(accessToken) == 0 && !e.IsRevoked && e.BasePointId == basePoint.Id);
-
-                if(keyPair != null)
+            DomainParametersModel dpm = (
+                from d in await guardContext.Domain.ToListAsync()
+                join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
+                join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
+                join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
+                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+                select new DomainParametersModel
                 {
-                    BigInteger a = new BigInteger(domain.a.ToString());
-                    BigInteger b = new BigInteger(domain.b.ToString());
+                    a = new BigInteger(d.a),
+                    b = new BigInteger(d.b),
+                    p = new BigInteger(d.p),
+                    N = new BigInteger(d.N),
+                    basePoint = new ECPoint(new BigInteger(b.x), new BigInteger(b.y))
+                }).FirstOrDefault();
 
-                    BigInteger p = new BigInteger(domain.p.ToString());
-                    BigInteger N = new BigInteger(domain.N.ToString());
-                    EllipticCurve curve = new EllipticCurve(a, b, p, N);
+            if (dpm != null)
+            {
+                /* revoke old key pair */
+                KeyPair keyPair = await guardContext.KeyPair
+                    .FirstOrDefaultAsync(e => e.RefreshToken.CompareTo(refreshToken) == 0 && !e.IsRevoked);
 
-                    BigInteger x = new BigInteger(basePoint.x.ToString());
-                    BigInteger y = new BigInteger(basePoint.y.ToString());
-                    ECPoint G = new ECPoint(x, y);
+                // get account
+                Account account = await guardContext.Account
+                    .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
 
-                    /* verify if valid signature */
-                    TokenFactory tokenFactory = new TokenFactory(curve, G);
-                    int res = tokenFactory.VerifyToken(refreshToken, accessToken);
+                keyPair.IsRevoked = true;
+                await guardContext.SaveChangesAsync();
 
-                    // get user account
-                    Account account = await guardContext.Account
-                        .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+                EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
+                TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
+                int result = tokenFactory.VerifyToken(refreshToken, accessToken);
 
-                    if(res == 1)
+                /* if access token not expired */
+                if (result == 1)
+                {
+                    var desc = new SecurityTokenDescription
                     {
-                        var desc = new SecurityTokenDescription
-                        {
-                            Issuer = jwtSettings.Issuer,
-                            Audience = jwtSettings.Audience,
-                            Subject = new SecurityClaimsIdentity()
-                        };
+                        Issuer = jwtSettings.Issuer,
+                        Audience = jwtSettings.Audience,
+                        Subject = new SecurityClaimsIdentity()
+                    };
 
-                        desc.Subject.AddClaim("id", account.Id.ToString());
-                        desc.Subject.AddClaim(ClaimType.Subject, account.Username);
-                        desc.Subject.AddClaim(ClaimType.Email, account.Address);
+                    desc.Subject.AddClaim("id", account.Id.ToString());
+                    desc.Subject.AddClaim(ClaimType.Subject, account.Username);
+                    desc.Subject.AddClaim(ClaimType.Email, account.Address);
 
-                        TokenModel model = tokenFactory.SignToken(desc);
-                        KeyPair newKeyPair = new KeyPair
-                        {
-                            SecureKey = model.secretKey,
-                            RefreshToken = model.refresh_token,
-                            AccessToken = model.access_token,
-                            BasePointId = basePoint.Id,
-                            AccountId = account.Id,
-                            IsRevoked = false
-                        };
+                    var tokenModel = tokenFactory.SignToken(desc);
+                    KeyPair newKeyPair = new KeyPair
+                    {
+                        SecureKey = tokenModel.secretKey,
+                        RefreshToken = tokenModel.refresh_token,
+                        AccessToken = tokenModel.access_token,
+                        BasePointId = keyPair.BasePointId,
+                        AccountId = account.Id,
+                        IsRevoked = false
+                    };
 
-                        /* save keypair to database */
-                        guardContext.KeyPair.Add(newKeyPair);
-                        await guardContext.SaveChangesAsync();
+                    /* save keypair to database */
+                    guardContext.KeyPair.Add(newKeyPair);
+                    await guardContext.SaveChangesAsync();
 
-                        TokenViewModel token = new TokenViewModel
-                        {
-                            access_token = model.access_token,
-                            refresh_token = model.refresh_token
-                        };
+                    TokenViewModel token = new TokenViewModel
+                    {
+                        access_token = tokenModel.access_token,
+                        refresh_token = tokenModel.refresh_token
+                    };
 
-                        return token;
-                    }
+                    return token;
                 }
             }
-            
+
             return null;
         }
 

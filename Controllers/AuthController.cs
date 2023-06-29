@@ -45,6 +45,35 @@ namespace TrustGuard.Controllers
                 return NotFound();
         }
 
+        [HttpPut("{Refresh}")]
+        public async Task<IActionResult> Refresh([FromForm]TokenViewModel tokenViewModel)
+        {
+            if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
+            {
+                string clientId = Request.Headers["ClientId"].ToString();
+                string clientSecret = Request.Headers["ClientSecret"].ToString();
+
+                if (!string.IsNullOrEmpty(tokenViewModel.access_token) && !string.IsNullOrEmpty(tokenViewModel.refresh_token))
+                {
+                    /* revoke tokens */
+                    TokenViewModel tokens = await applicationService
+                        .RefreshTokenAsync(tokenViewModel.refresh_token,
+                        tokenViewModel.access_token,
+                        clientId,
+                        clientSecret);
+
+                    if (tokens != null)
+                        return Ok(tokens);
+                    else
+                        return Unauthorized();
+                }
+                else
+                    return Unauthorized();
+            }
+            else
+                return NotFound();
+        }
+
         [HttpPost("{Revoke}")]
         public async Task<IActionResult> Revoke([FromForm]TokenViewModel tokens)
         {
