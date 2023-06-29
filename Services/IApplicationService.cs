@@ -11,7 +11,8 @@ namespace TrustGuard.Services
         Task<bool?> RemoveApplicationAsync(bool complete, int userId, int appId);
         Task<TokenViewModel> AuthenticateAsync(string? userId, string? clientId, string? clientSecret);
         Task<ApplicationResultModel> GetApplicationsAsync(bool complete, string? userId, int? page);
-		Task<ApplicationResultModel> GetAppsByFilterAsync(bool complete, AppQueryFilter filter, string? userId, int? page);
+        Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret);
+        Task<ApplicationResultModel> GetAppsByFilterAsync(bool complete, AppQueryFilter filter, string? userId, int? page);
         Task<bool> CreateApplicationAsync(ApplicationModel appModel);
         Task UpdateDatabase(ECParams[]? args);
     }

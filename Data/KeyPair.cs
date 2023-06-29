@@ -14,6 +14,6 @@ namespace TrustGuard.Data
 
         public int BasePointId { get; set; }
         public BasePoint BasePoint { get; set; }
-        public bool IsDeleted { get; set; }
+        public bool IsRevoked { get; set; }
     }
 }

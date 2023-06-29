@@ -24,6 +24,45 @@ namespace TrustGuard.Services
             this.jwtSettings = jwtSettings;
         }
 
+        public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
+        {
+            KeyPair keyPair = await guardContext.KeyPair
+                .FirstOrDefaultAsync(e => e.AccessToken.CompareTo(accessToken) == 0);
+
+            if(keyPair != null && !keyPair.IsRevoked)
+            {
+                BasePoint basePoint = await guardContext.BasePoint
+                    .FirstOrDefaultAsync(e => e.Id == keyPair.BasePointId);
+
+                // domain parameters
+                Domain domain = await guardContext.Domain
+                    .FirstOrDefaultAsync(e => e.Id == basePoint.DomainId);
+
+                BigInteger a = new BigInteger(domain.a.ToString());
+                BigInteger b = new BigInteger(domain.b.ToString());
+
+                BigInteger p = new BigInteger(domain.p.ToString());
+                BigInteger N = new BigInteger(domain.N.ToString());
+                EllipticCurve curve = new EllipticCurve(a, b, p, N);
+
+                BigInteger x = new BigInteger(basePoint.x.ToString());
+                BigInteger y = new BigInteger(basePoint.y.ToString());
+
+                ECPoint G = new ECPoint(x, y);
+                TokenFactory tokenFactory = new TokenFactory(curve, G);
+
+                /* revoke key pair */
+                keyPair.IsRevoked = true;
+                await guardContext.SaveChangesAsync();
+
+                int result = tokenFactory.VerifyToken(refreshToken, accessToken);
+                return result;
+            }
+
+            /* already revoked */
+            return -2;
+        }
+
         public async Task<TokenViewModel> AuthenticateAsync(string? userId, string? clientId, string? clientSecret)
         {
             if (!string.IsNullOrEmpty(userId))
@@ -80,7 +119,7 @@ namespace TrustGuard.Services
                             AccessToken = tokenModel.access_token,
                             BasePointId = basePoint.Id,
                             AccountId = account.Id,
-                            IsDeleted = false
+                            IsRevoked = false
                         };
 
                         /* save keypair to database */

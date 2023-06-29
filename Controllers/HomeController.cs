@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Diagnostics;
 using TrustGuard.Data;
 using TrustGuard.Environment;
@@ -61,6 +62,34 @@ namespace TrustGuard.Controllers
                     /* save tokens to database, output them to user after */
                     TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
                     return Ok(token);
+                }
+                else
+                    return Unauthorized();
+            }
+            else
+                return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Revoke(TokenViewModel tokens)
+        {
+            if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
+            {
+                string clientId = Request.Headers["ClientId"].ToString();
+                string clientSecret = Request.Headers["ClientSecret"].ToString();
+
+                if (!string.IsNullOrEmpty(tokens.access_token) && !string.IsNullOrEmpty(tokens.refresh_token))
+                {
+                    int status = await applicationService
+                        .RevokeTokenAsync(tokens.refresh_token,
+                        tokens.access_token, 
+                        clientId, 
+                        clientSecret);
+
+                    if (status > 0)
+                        return Ok();
+                    else
+                        return Unauthorized();
                 }
                 else
                     return Unauthorized();
