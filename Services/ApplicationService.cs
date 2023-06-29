@@ -176,6 +176,16 @@ namespace TrustGuard.Services
                         guardContext.BasePoint.RemoveRange(points);
                         await guardContext.SaveChangesAsync();
 
+                        Domain? domain = await guardContext.Domain
+                            .FirstOrDefaultAsync(e => e.Id == project.DomainId);
+
+                        /* reindex domain's counter */
+                        if (domain != null)
+                        {
+                            domain.count--;
+                            await guardContext.SaveChangesAsync();
+                        }
+
                         /* complete removing of the application */
                         guardContext.Application.Remove(project);
                         await guardContext.SaveChangesAsync();
