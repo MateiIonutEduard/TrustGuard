@@ -41,6 +41,17 @@ namespace TrustGuard.Services
 						.Where(p => p.ApplicationId == app.Id)
 						.ToArrayAsync();
 
+					/* get app domain parameters */
+					Domain? domain = await guardContext.Domain
+						.FirstOrDefaultAsync(e => e.Id == app.DomainId);
+
+					/* recount domain parameters usage */
+					if(domain != null)
+					{
+						domain.count--;
+						await guardContext.SaveChangesAsync();
+					}
+
 					/* remove all base points for each app */
 					guardContext.BasePoint.RemoveRange(basePoints);
 					await guardContext.SaveChangesAsync();
