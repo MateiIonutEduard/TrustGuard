@@ -73,6 +73,7 @@ namespace TrustGuard.Controllers
         [HttpPost]
         public async Task<IActionResult> Revoke(TokenViewModel tokens)
         {
+            // it is app identified?
             if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
             {
                 string clientId = Request.Headers["ClientId"].ToString();
@@ -80,6 +81,7 @@ namespace TrustGuard.Controllers
 
                 if (!string.IsNullOrEmpty(tokens.access_token) && !string.IsNullOrEmpty(tokens.refresh_token))
                 {
+                    /* revoke tokens */
                     int status = await applicationService
                         .RevokeTokenAsync(tokens.refresh_token,
                         tokens.access_token, 
