@@ -168,6 +168,14 @@ namespace TrustGuard.Services
                         if (!string.IsNullOrEmpty(project.AppLogo) && !project.AppLogo.EndsWith("defaultApp.png"))
                             File.Delete(project.AppLogo);
 
+                        BasePoint[] points = await guardContext.BasePoint
+                            .Where(e => e.ApplicationId == project.Id)
+                            .ToArrayAsync();
+
+                        /* remove elliptic curve base points attributed to this app */
+                        guardContext.BasePoint.RemoveRange(points);
+                        await guardContext.SaveChangesAsync();
+
                         /* complete removing of the application */
                         guardContext.Application.Remove(project);
                         await guardContext.SaveChangesAsync();
