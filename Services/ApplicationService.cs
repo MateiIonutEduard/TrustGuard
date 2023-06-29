@@ -73,6 +73,20 @@ namespace TrustGuard.Services
                         TokenFactory tokenFactory = new TokenFactory(curve, G);
 
                         tokenModel = tokenFactory.SignToken(desc);
+                        KeyPair keyPair = new KeyPair
+                        {
+                            SecureKey = tokenModel.secretKey,
+                            RefreshToken = tokenModel.refresh_token,
+                            AccessToken = tokenModel.access_token,
+                            BasePointId = basePoint.Id,
+                            AccountId = account.Id,
+                            IsDeleted = false
+                        };
+
+                        /* save keypair to database */
+                        guardContext.KeyPair.Add(keyPair);
+                        await guardContext.SaveChangesAsync();
+
                         TokenViewModel token = new TokenViewModel
                         {
                             access_token = tokenModel.access_token,
