@@ -48,6 +48,7 @@ namespace TrustGuard.Controllers
         [HttpPost]
         public async Task<IActionResult> Auth(AccountRequestModel accountRequestModel)
         {
+            /* required for account authorization */
             AccountResponseModel res = await accountService.SignInAsync(accountRequestModel);
             if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
             {
@@ -55,8 +56,9 @@ namespace TrustGuard.Controllers
                 {
                     string userId = res.id.Value.ToString();
                     string clientId = Request.Headers["ClientId"].ToString();
-
                     string clientSecret = Request.Headers["ClientSecret"].ToString();
+
+                    /* save tokens to database, output them to user after */
                     TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
                     return Ok(token);
                 }
