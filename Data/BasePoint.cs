@@ -1,5 +1,7 @@
 ﻿#pragma warning disable
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace TrustGuard.Data
 {
     public class BasePoint
@@ -14,5 +16,7 @@ namespace TrustGuard.Data
         public int DomainId { get; set; }
         public Domain Domain { get; set; }
         public bool? IsSuspicious { get; set; }
+        [ForeignKey("BasePointId")]
+        public virtual ICollection<KeyPair> KeyPairs { get; set; }
     }
 }

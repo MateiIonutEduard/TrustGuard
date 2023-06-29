@@ -13,5 +13,7 @@ namespace TrustGuard.Data
         public string? SecurityCode { get; set; }
         [ForeignKey("AccountId")]
         public virtual ICollection<Application> Applications { get; set; }
+        [ForeignKey("AccountId")]
+        public virtual ICollection<KeyPair> KeyPairs { get; set; }
     }
 }
