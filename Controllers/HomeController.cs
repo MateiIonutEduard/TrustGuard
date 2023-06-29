@@ -41,6 +41,21 @@ namespace TrustGuard.Controllers
             return View();
         }
 
+        public async Task<IActionResult> Restore(int appId)
+        {
+            string? userId = HttpContext.User?.Claims?
+                .FirstOrDefault(u => u.Type == "id")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                int uid = Convert.ToInt32(userId);
+                await applicationService.RestoreApplicationAsync(uid, appId);
+                return Redirect("/Home/MyTrash");
+            }
+            else
+                return Redirect("/Account/");
+        }
+
         [HttpPost, Authorize]
         public async Task<IActionResult> RemoveProject(int appId, bool? complete)
         {

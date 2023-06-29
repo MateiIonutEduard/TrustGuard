@@ -134,6 +134,28 @@ namespace TrustGuard.Services
             return null;
         }
 
+        public async Task<bool?> RestoreApplicationAsync(int userId, int appId)
+        {
+            Application? app = await guardContext.Application
+                .FirstOrDefaultAsync(p => p.Id == appId && (p.IsDeleted != null && p.IsDeleted.Value));
+
+            if(app != null)
+            {
+                /* enable application back */
+                if(app.AccountId == userId)
+                {
+                    app.IsDeleted = false;
+                    await guardContext.SaveChangesAsync();
+                }
+
+                /* no rights */
+                return false;
+            }
+
+            /* app has been removed completely */
+            return null;
+        }
+
         public async Task<bool?> RemoveApplicationAsync(bool complete, int userId, int appId)
         {
             /* temporary removing the application */
