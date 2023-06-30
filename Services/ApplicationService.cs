@@ -15,14 +15,17 @@ namespace TrustGuard.Services
 {
     public class ApplicationService : IApplicationService
     {
+        readonly IAppSettings appSettings;
         readonly IJwtSettings jwtSettings;
         readonly TrustGuardContext guardContext;
         readonly RandomNumberGenerator rand;
 
-        public ApplicationService(IJwtSettings jwtSettings, TrustGuardContext guardContext)
+        public ApplicationService(IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
         { 
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
+
+            this.appSettings = appSettings;
             this.jwtSettings = jwtSettings;
         }
 
@@ -603,14 +606,19 @@ namespace TrustGuard.Services
                 guardContext.BasePoint.Add(G);
                 await guardContext.SaveChangesAsync();
 
-                /* creates new demand that will be processed later */
-                Demand demand = new Demand
+                /* send demand when the flag is activated */
+                if (appSettings.EnableDemandSending != null && appSettings.EnableDemandSending.Value)
                 {
-                    IssuedAt = DateTime.UtcNow
-                };
+                    /* creates new demand that will be processed later */
+                    Demand demand = new Demand
+                    {
+                        IssuedAt = DateTime.UtcNow
+                    };
 
-                guardContext.Demand.Add(demand);
-                await guardContext.SaveChangesAsync();
+                    guardContext.Demand.Add(demand);
+                    await guardContext.SaveChangesAsync();
+                }
+
                 return true;
             }
 
