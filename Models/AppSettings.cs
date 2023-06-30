@@ -7,5 +7,6 @@ namespace TrustGuard.Models
         public string key { get; set; }
         public string salt { get; set; }
         public bool? EnableBrowserSupport { get; set; }
+        public bool? EnableDemandSending { get; set; }
     }
 }
