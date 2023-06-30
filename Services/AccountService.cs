@@ -41,8 +41,23 @@ namespace TrustGuard.Services
 						.Where(p => p.ApplicationId == app.Id)
 						.ToArrayAsync();
 
-					/* get app domain parameters */
-					Domain? domain = await guardContext.Domain
+                    foreach (BasePoint point in basePoints)
+                    {
+                        /* remove all key pairs that refers each base point */
+                        List<KeyPair> keyPairs = await guardContext.KeyPair
+                            .Where(k => k.BasePointId == point.Id)
+                            .ToListAsync();
+
+                        /* if list contains base points */
+                        if (keyPairs != null && keyPairs.Count > 0)
+                        {
+                            guardContext.KeyPair.RemoveRange(keyPairs);
+                            await guardContext.SaveChangesAsync();
+                        }
+                    }
+
+                    /* get app domain parameters */
+                    Domain? domain = await guardContext.Domain
 						.FirstOrDefaultAsync(e => e.Id == app.DomainId);
 
 					/* recount domain parameters usage */
