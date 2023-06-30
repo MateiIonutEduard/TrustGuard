@@ -46,7 +46,6 @@ namespace TrustGuard.Environment
 
 			identity.AddClaim(ClaimType.Audience, tokenDescription.Audience);
 			identity.AddClaim(ClaimType.Expires, GetUnixTime(DateTime.UtcNow.AddMinutes(5)).ToString());
-			identity.AddClaim(ClaimType.Jti, Guid.NewGuid().ToString());
 
 			string header = GetHeader();
 			string payload = identity.GetPayload();
