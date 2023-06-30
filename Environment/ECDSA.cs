@@ -61,7 +61,7 @@ namespace TrustGuard.Environment
 			for(int i = 0; i < 32; i++)
 			{
 				result[i + 32] = i < sb.Length ? sb[i] : (byte)0;
-				result[i] = rb[i];
+				result[i] = i < rb.Length ? rb[i] : (byte)0;
 			}
 
 			return result;
