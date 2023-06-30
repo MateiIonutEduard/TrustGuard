@@ -385,6 +385,22 @@ namespace TrustGuard.Services
                             .Where(e => e.ApplicationId == project.Id)
                             .ToArrayAsync();
 
+                        foreach(BasePoint point in points)
+                        {
+                            /* remove all key pairs that are generated 
+                             * using each base point in the list */
+                            List<KeyPair> keyPairs = await guardContext.KeyPair
+                                .Where(k => k.BasePointId == point.Id)
+                                .ToListAsync();
+
+                            /* if base point list is not null and his items counter is greater than 0 */
+                            if (keyPairs != null && keyPairs.Count > 0)
+                            {
+                                guardContext.KeyPair.RemoveRange(keyPairs);
+                                await guardContext.SaveChangesAsync();
+                            }
+                        }
+
                         /* remove elliptic curve base points attributed to this app */
                         guardContext.BasePoint.RemoveRange(points);
                         await guardContext.SaveChangesAsync();
