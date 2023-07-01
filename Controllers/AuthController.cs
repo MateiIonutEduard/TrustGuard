@@ -35,7 +35,7 @@ namespace TrustGuard.Controllers
                     string clientSecret = Request.Headers["ClientSecret"].ToString();
 
                     /* save tokens to database, output them to user after */
-                    TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
+                    TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret, true);
                     return Ok(token);
                 }
                 else
@@ -60,7 +60,7 @@ namespace TrustGuard.Controllers
                         .RefreshTokenAsync(tokenViewModel.refresh_token,
                         tokenViewModel.access_token,
                         clientId,
-                        clientSecret);
+                        clientSecret, true);
 
                     if (tokens != null)
                         return Ok(tokens);
@@ -90,7 +90,7 @@ namespace TrustGuard.Controllers
                         .RevokeTokenAsync(tokens.refresh_token,
                         tokens.access_token,
                         clientId,
-                        clientSecret);
+                        clientSecret, true);
 
                     if (status > 0)
                         return Ok();

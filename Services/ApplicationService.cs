@@ -29,14 +29,23 @@ namespace TrustGuard.Services
             this.jwtSettings = jwtSettings;
         }
 
-        public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
+        public async Task<Application?> GetApplicationByIdAsync(string? clientId, string? clientSecret)
+        {
+            Application? app = await guardContext.Application
+                .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
+
+            /* get app by id */
+            return app;
+		}
+
+        public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret, bool validateLifetime = false)
         {
             DomainParametersModel dpm = (
                 from d in await guardContext.Domain.ToListAsync()
                 join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
                 join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
                 join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
-                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (a.IsDeleted == null || (a.IsDeleted != null && !a.IsDeleted.Value)) && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
                 select new DomainParametersModel
                 {
                     a = new BigInteger(d.a),
@@ -58,7 +67,7 @@ namespace TrustGuard.Services
                 EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
 
-                int result = tokenFactory.VerifyToken(refreshToken, accessToken);
+                int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
                 return result;
             }
 
@@ -66,14 +75,14 @@ namespace TrustGuard.Services
             return -2;
         }
 
-        public async Task<TokenViewModel?> RefreshTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
+        public async Task<TokenViewModel?> RefreshTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret, bool validateLifetime = false)
         {
             DomainParametersModel dpm = (
                 from d in await guardContext.Domain.ToListAsync()
                 join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
                 join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
                 join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
-                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (a.IsDeleted == null || (a.IsDeleted != null && !a.IsDeleted.Value)) && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
                 select new DomainParametersModel
                 {
                     a = new BigInteger(d.a),
@@ -98,7 +107,7 @@ namespace TrustGuard.Services
 
                 EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
-                int result = tokenFactory.VerifyToken(refreshToken, accessToken);
+                int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
 
                 /* if access token not expired */
                 if (result == 1)
@@ -114,7 +123,7 @@ namespace TrustGuard.Services
                     desc.Subject.AddClaim(ClaimType.Subject, account.Username);
                     desc.Subject.AddClaim(ClaimType.Email, account.Address);
 
-                    var tokenModel = tokenFactory.SignToken(desc);
+                    var tokenModel = tokenFactory.SignToken(desc, validateLifetime);
                     KeyPair newKeyPair = new KeyPair
                     {
                         SecureKey = tokenModel.secretKey,
@@ -142,7 +151,7 @@ namespace TrustGuard.Services
             return null;
         }
 
-        public async Task<TokenViewModel?> AuthenticateAsync(string? userId, string? clientId, string? clientSecret)
+        public async Task<TokenViewModel?> AuthenticateAsync(string? userId, string? clientId, string? clientSecret, bool validateLifetime = false)
         {
             if (!string.IsNullOrEmpty(userId))
             {
@@ -165,7 +174,7 @@ namespace TrustGuard.Services
                     TokenModel tokenModel = new TokenModel();
 
                     Application? application = await guardContext.Application
-                        .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
+                        .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0 && (e.IsDeleted == null || (e.IsDeleted != null && !e.IsDeleted.Value)));
 
                     if (application != null)
                     {
@@ -188,7 +197,7 @@ namespace TrustGuard.Services
                         ECPoint G = new ECPoint(x, y);
                         TokenFactory tokenFactory = new TokenFactory(curve, G);
 
-                        tokenModel = tokenFactory.SignToken(desc);
+                        tokenModel = tokenFactory.SignToken(desc, validateLifetime);
                         KeyPair keyPair = new KeyPair
                         {
                             SecureKey = tokenModel.secretKey,
