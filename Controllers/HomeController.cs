@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Security.Claims;
 using TrustGuard.Data;
@@ -144,6 +145,45 @@ namespace TrustGuard.Controllers
 			}
 			else
 				return Unauthorized();
+		}
+
+        [HttpPost]
+        public async Task<IActionResult> Revoke()
+        {
+			/* get app credentials and callback url */
+			string clientId = Request.Cookies["ClientId"];
+			string clientSecret = Request.Cookies["ClientSecret"];
+			string returnUrl = Request.Cookies["Callback"];
+
+			// app identification
+			if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret) && !string.IsNullOrEmpty(returnUrl))
+			{
+				string access_token = Request.Cookies["access_token"].ToString();
+				string refresh_token = Request.Cookies["refresh_token"].ToString();
+
+				if (!string.IsNullOrEmpty(access_token) && !string.IsNullOrEmpty(refresh_token))
+				{
+					/* revoke tokens */
+					int status = await applicationService
+						.RevokeTokenAsync(refresh_token,
+						access_token,
+						clientId,
+						clientSecret, true);
+
+                    Response.Cookies.Delete("access_token");
+					Response.Cookies.Delete("refresh_token");
+					Response.Cookies.Delete("Callback");
+
+                    if (status > 0)
+                        return Redirect(returnUrl);
+                    else
+                        return Unauthorized();
+				}
+				else
+					return Unauthorized();
+			}
+			else
+				return NotFound();
 		}
 
         public async Task<IActionResult> Restore(int appId)

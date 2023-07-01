@@ -17,7 +17,7 @@
 	<div class="row">
 		<div class="col-4"></div>
 		<div class="col-4">
-			@if (false/*app.IsDeleted == null || (app.IsDeleted != null && !app.IsDeleted.Value)*/)
+			@if (app.IsDeleted == null || (app.IsDeleted != null && !app.IsDeleted.Value))
 			{
 				@if (Context.User.Identity!.IsAuthenticated)
 				{
