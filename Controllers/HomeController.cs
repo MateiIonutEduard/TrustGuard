@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Security.Claims;
 using TrustGuard.Data;
 using TrustGuard.Environment;
 using TrustGuard.Models;
@@ -58,8 +60,91 @@ namespace TrustGuard.Controllers
 
             Response.Cookies.Append("ClientId", "cbc0831e-5180-42a7-9256-fc6d6a1b04b4");
 			Response.Cookies.Append("ClientSecret", "GgujbMWAgOux+maVz96ybbcPTZVaXTYiEFKUbQ0F7VQ=");
+            Response.Cookies.Append("Callback", returnUrl);
 			return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Auth()
+        {
+			/* get app credentials and callback url */
+			string clientId = Request.Cookies["ClientId"];
+			string clientSecret = Request.Cookies["ClientSecret"];
+			string returnUrl = Request.Cookies["Callback"];
+
+			/* user id */
+			string? userId = HttpContext.User?.Claims?
+				.FirstOrDefault(u => u.Type == "id")?.Value;
+
+			/* save tokens to database, save them in cookies after */
+			TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
+
+			/* remove access token and refresh token if exists */
+			if (Request.Cookies.ContainsKey("access_key")) Response.Cookies.Delete("access_token");
+			if (Request.Cookies.ContainsKey("refresh_token")) Response.Cookies.Delete("refresh_token");
+
+			if (token != null)
+            {
+				/* save tokens and go back */
+				Response.Cookies.Append("access_token", token.access_token);
+                Response.Cookies.Append("refresh_token", token.refresh_token);
+
+                Response.Cookies.Delete("Callback");
+                return Redirect(returnUrl);
+            }
+            else
+                return NotFound();
+		}
+
+        [HttpPost]
+        public async Task<IActionResult> Signin(AccountRequestModel accountRequestModel)
+        {
+			AccountResponseModel res = await accountService.SignInAsync(accountRequestModel);
+			if (res.status < 0) return Redirect("/Account/Signup");
+			else if (res.status == 0) return Redirect("/Account/?FailCode=true");
+
+			if (res.status == 1)
+			{
+				string userId = res.id.Value.ToString();
+				string clientId = Request.Cookies["ClientId"].ToString();
+
+				string clientSecret = Request.Cookies["ClientSecret"].ToString();
+				string returnUrl = Request.Cookies["Callback"];
+
+				/* save tokens to database, output them to user after */
+				TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
+
+                /* remove access token and refresh token if exists */
+                if (Request.Cookies.ContainsKey("access_key")) Response.Cookies.Delete("access_token");
+				if (Request.Cookies.ContainsKey("refresh_token")) Response.Cookies.Delete("refresh_token");
+
+				if (token != null)
+				{
+					/* save tokens and redirect */
+					Response.Cookies.Append("access_token", token.access_token);
+					Response.Cookies.Append("refresh_token", token.refresh_token);
+
+					Response.Cookies.Delete("Callback");
+					var claims = new Claim[]
+                    {
+				         new Claim("id", res.id.Value.ToString()),
+				         new Claim(ClaimTypes.Name, res.username),
+				         new Claim(ClaimTypes.Email, res.address.ToString())
+                    };
+
+					var identity = new ClaimsIdentity(claims, "User Identity");
+					var userPrincipal = new ClaimsPrincipal(new[] { identity });
+
+                    /* authenticate user before redirect */
+					await HttpContext.SignInAsync(userPrincipal);
+					return Redirect(returnUrl);
+				}
+				else
+					return Unauthorized();
+			}
+			else
+				return Unauthorized();
+		}
 
         public async Task<IActionResult> Restore(int appId)
         {

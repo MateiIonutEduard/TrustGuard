@@ -43,7 +43,7 @@
 						<div class="col-2"></div>
 						<div class="col-8">
 							<script src="~/lib/jquery/dist/jquery.min.js"></script>
-							<form action="#" method="post">
+							<form action="/Home/Auth" method="post">
 								<div class="row">
 									<div class="col-1">
 									</div>
@@ -57,7 +57,7 @@
 									</div>
 									<div class="col-1"></div>
 								</div>
-								<input type="hidden" value="@Context.Request.Query["returnUrl"]" />
+								<input type="hidden" id="callback" name="callback" value="@Context.Request.Query["returnUrl"]" />
 								<p class="mt-5 mb-3" style="margin-left: 25%; color: #454b51;">TrustGuard &copy; 2023. <br />All rights reserved.</p>
 							</form>
 						</div>
@@ -70,7 +70,7 @@
 						<div class="col-2"></div>
 						<div class="col-8">
 							<script src="~/lib/jquery/dist/jquery.min.js"></script>
-							<form action="/Account/Signin" method="post">
+							<form action="/Home/Signin" method="post">
 								<img class="mb-4" src="/images/trustGuard.png" style="margin-left: 30%;" width="72" height="72">
 								<h4 class="h3 mb-3 font-weight-normal" style="margin-left: 30%;">Sign In</h4>
 								<label for="address" class="sr-only">Email address</label>
