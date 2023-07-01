@@ -29,6 +29,15 @@ namespace TrustGuard.Services
             this.jwtSettings = jwtSettings;
         }
 
+        public async Task<Application?> GetApplicationByIdAsync(string? clientId, string? clientSecret)
+        {
+            Application? app = await guardContext.Application
+                .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
+
+            /* get app by id */
+            return app;
+		}
+
         public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
         {
             DomainParametersModel dpm = (
@@ -36,7 +45,7 @@ namespace TrustGuard.Services
                 join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
                 join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
                 join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
-                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (a.IsDeleted == null || (a.IsDeleted != null && !a.IsDeleted.Value)) && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
                 select new DomainParametersModel
                 {
                     a = new BigInteger(d.a),
@@ -73,7 +82,7 @@ namespace TrustGuard.Services
                 join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
                 join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
                 join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
-                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+                where k.RefreshToken.CompareTo(refreshToken) == 0 && a.ClientId.CompareTo(clientId) == 0 && (a.IsDeleted == null || (a.IsDeleted != null && !a.IsDeleted.Value)) && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
                 select new DomainParametersModel
                 {
                     a = new BigInteger(d.a),
@@ -165,7 +174,7 @@ namespace TrustGuard.Services
                     TokenModel tokenModel = new TokenModel();
 
                     Application? application = await guardContext.Application
-                        .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0);
+                        .FirstOrDefaultAsync(e => e.ClientId.CompareTo(clientId) == 0 && e.ClientSecret.CompareTo(clientSecret) == 0 && (e.IsDeleted == null || (e.IsDeleted != null && !e.IsDeleted.Value)));
 
                     if (application != null)
                     {

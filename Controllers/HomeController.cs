@@ -14,9 +14,11 @@ namespace TrustGuard.Controllers
     {
         readonly IAccountService accountService;
         readonly IApplicationService applicationService;
+        readonly IHttpContextAccessor httpContextAccessor;
 
-        public HomeController(IAccountService accountService, IApplicationService applicationService)
+		public HomeController(IHttpContextAccessor httpContextAccessor, IAccountService accountService, IApplicationService applicationService)
         {
+            this.httpContextAccessor = httpContextAccessor;
             this.applicationService = applicationService;
             this.accountService = accountService;
         }
@@ -46,58 +48,17 @@ namespace TrustGuard.Controllers
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Auth(AccountRequestModel accountRequestModel)
+        public IActionResult Auth(string? returnUrl)
         {
-            /* required for account authorization */
-            AccountResponseModel res = await accountService.SignInAsync(accountRequestModel);
-            if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
-            {
-                if (res.status == 1)
-                {
-                    string userId = res.id.Value.ToString();
-                    string clientId = Request.Headers["ClientId"].ToString();
-                    string clientSecret = Request.Headers["ClientSecret"].ToString();
+            /*if (!Request.Cookies.ContainsKey("ClientId") || !Request.Cookies.ContainsKey("ClientSecret"))
+                return BadRequest();
 
-                    /* save tokens to database, output them to user after */
-                    TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
-                    return Ok(token);
-                }
-                else
-                    return Unauthorized();
-            }
-            else
-                return NotFound();
-        }
+            string clientId = Request.Cookies["ClientId"];
+            string clientSecret = Request.Cookies["ClientSecret"];*/
 
-        [HttpPost]
-        public async Task<IActionResult> Revoke(TokenViewModel tokens)
-        {
-            // it is app identified?
-            if (Request.Headers.ContainsKey("ClientId") && Request.Headers.ContainsKey("ClientSecret"))
-            {
-                string clientId = Request.Headers["ClientId"].ToString();
-                string clientSecret = Request.Headers["ClientSecret"].ToString();
-
-                if (!string.IsNullOrEmpty(tokens.access_token) && !string.IsNullOrEmpty(tokens.refresh_token))
-                {
-                    /* revoke tokens */
-                    int status = await applicationService
-                        .RevokeTokenAsync(tokens.refresh_token,
-                        tokens.access_token, 
-                        clientId, 
-                        clientSecret);
-
-                    if (status > 0)
-                        return Ok();
-                    else
-                        return Unauthorized();
-                }
-                else
-                    return Unauthorized();
-            }
-            else
-                return NotFound();
+            Response.Cookies.Append("ClientId", "cbc0831e-5180-42a7-9256-fc6d6a1b04b4");
+			Response.Cookies.Append("ClientSecret", "GgujbMWAgOux+maVz96ybbcPTZVaXTYiEFKUbQ0F7VQ=");
+			return View();
         }
 
         public async Task<IActionResult> Restore(int appId)

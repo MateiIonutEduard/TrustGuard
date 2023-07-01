@@ -140,3 +140,19 @@ header, footer {
     color: #ed6863;
     font-size: 18px;
 }
+
+#appBox {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+}
+
+.list-group {
+    margin-left: 30%;
+}
+
+.list-group-item {
+    border: none;
+    color: #494963;
+    background-color: #b0b3d5 !important;
+}

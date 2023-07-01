@@ -1,0 +1,105 @@
+﻿﻿@using TrustGuard.Models;
+﻿@using TrustGuard.Data;
+@using TrustGuard.Services;
+@model AccountRequestModel;
+@inject IApplicationService appService;
+
+@{
+	#pragma warning disable
+	ViewData["Title"] = "TrustGuard Signin";
+	Application? app = await appService.GetApplicationByIdAsync(Context.Request.Cookies["ClientId"], Context.Request.Cookies["ClientSecret"]);
+	bool valid = Context.Request.Query.ContainsKey("FailCode") ? Convert.ToBoolean(Context.Request.Query["FailCode"]) : false;
+	string username = Context.User?.Claims?.FirstOrDefault(u => u.Type.Contains("name"))?.Value;
+	string address = Context.User?.Claims?.FirstOrDefault(u => u.Type.Contains("address"))?.Value;
+	string userId = Context.User?.Claims?.FirstOrDefault(u => u.Type == "id")?.Value;
+}
+<div class="container">
+	<div class="row">
+		<div class="col-4"></div>
+		<div class="col-4">
+			@if (app.IsDeleted == null || (app.IsDeleted != null && !app.IsDeleted.Value))
+			{
+				@if (Context.User.Identity!.IsAuthenticated)
+				{
+					<div class="row" style="margin-top: 40%; background-color: #bebfd3 !important; padding-top: 12%;">
+						<div id="appBox" class="col-6">
+							<img class="mb-4" src="/Home/Show/?id=@app.Id" style="margin-left: 30%;" width="40" height="40">
+							<p style="margin-top: 5%; color: #3b4171;">@app.AppName</p>
+						</div>
+						<div class="col-6">
+							<p style="margin-top: 5%;">requests access to:</p>
+						</div>
+					</div>
+					<div class="row" style="background-color: #b0b3d5 !important;">
+						<div class="col-12">
+							<ul class="list-group">
+								<li class="list-group-item"><i class="fa fa-user" style="color: #5c808b;" aria-hidden="true"></i>&nbsp;&nbsp;Username</li>
+								<li class="list-group-item"><i class="fa fa-solid fa-image" style="color: #5c808b;" aria-hidden="true"></i>&nbsp;Profile Image</li>
+								<li class="list-group-item"><i class="fa fa-solid fa-envelope" style="color: #5c808b;" aria-hidden="true"></i>&nbsp;Address</li>
+							</ul>
+						</div>
+					</div>
+					<div class="row" style="background-color: #bfc1dd !important;">
+						<div class="col-2"></div>
+						<div class="col-8">
+							<script src="~/lib/jquery/dist/jquery.min.js"></script>
+							<form action="#" method="post">
+								<div class="row">
+									<div class="col-1">
+									</div>
+									<div class="col-8">
+										<button class="btn btn-primary btn-sm" style="margin-top: 15%; margin-left: 30%; width: 120px;" title="@address" type="submit">
+											<div class="row" style="margin-top: 5%;">
+												<div class="col-6"><img src="/Account/Show/?id=@userId" width="32" height="32" /></div>
+												<div class="col-6"><p style="margin-left: -30%;">@username</p></div>
+											</div>
+										</button>
+									</div>
+									<div class="col-1"></div>
+								</div>
+								<input type="hidden" value="@Context.Request.Query["returnUrl"]" />
+								<p class="mt-5 mb-3" style="margin-left: 25%; color: #454b51;">TrustGuard &copy; 2023. <br />All rights reserved.</p>
+							</form>
+						</div>
+						<div class="col-2"></div>
+					</div>
+				}
+				else
+				{
+					<div class="row" style="margin-top: 40%; background-color: #bfc1dd !important; padding-top: 12%;">
+						<div class="col-2"></div>
+						<div class="col-8">
+							<script src="~/lib/jquery/dist/jquery.min.js"></script>
+							<form action="/Account/Signin" method="post">
+								<img class="mb-4" src="/images/trustGuard.png" style="margin-left: 30%;" width="72" height="72">
+								<h4 class="h3 mb-3 font-weight-normal" style="margin-left: 30%;">Sign In</h4>
+								<label for="address" class="sr-only">Email address</label>
+								<input type="email" id="address" name="address" class="form-control" placeholder="Adress" required autofocus><br />
+								<label for="password" class="sr-only">Password</label>
+								<input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+								@if (valid)
+								{
+									<span style="color: #DC4C64; margin-left: 10%;">Wrong Password! <a href="/Account/Recover" style="color: #7a74cc !important; text-decoration: none;">Recover?</a></span>
+								}
+								<a href="/Account/Recover" style="color: #266fbb !important; margin-left: -10px; margin-top: 2%;" class="nav-link">Lost Password?</a>
+								<div class="row" style="margin-top: 5%;">
+									<div class="col-2"></div>
+									<div class="col-4">
+										<button class="btn btn-sm btn-primary btn-block" type="submit">Sign in</button>
+									</div>
+									<div class="col-4">
+										<a class="btn btn-sm btn-outline-secondary btn-block" href="/Account/Signup">Register</a>
+									</div>
+									<div class="col-2"></div>
+								</div>
+								<p class="mt-5 mb-3" style="margin-left: 25%; color: #454b51;">TrustGuard &copy; 2023. <br />All rights reserved.</p>
+							</form>
+						</div>
+						<div class="col-2"></div>
+					</div>
+				}
+			}
+		</div>
+		<div class="col-4"></div>
+	</div>
+</div>
