@@ -17,7 +17,7 @@
 	<div class="row">
 		<div class="col-4"></div>
 		<div class="col-4">
-			@if (app.IsDeleted == null || (app.IsDeleted != null && !app.IsDeleted.Value))
+			@if (false/*app.IsDeleted == null || (app.IsDeleted != null && !app.IsDeleted.Value)*/)
 			{
 				@if (Context.User.Identity!.IsAuthenticated)
 				{
@@ -98,6 +98,15 @@
 						<div class="col-2"></div>
 					</div>
 				}
+			}
+			else
+			{
+				<div class="alert alert-danger" style="margin-top: 30%;" role="alert">
+					<h4 class="alert-heading">Not Found!</h4>
+					<p>Your application is disable or removed completely.</p>
+					<hr>
+					<p class="mb-0">Please check the availability of this application or create a new one by accessing this <a href="/Account/" title="Sign in" class="alert-link">log in</a>.</p>
+				</div>
 			}
 		</div>
 		<div class="col-4"></div>
