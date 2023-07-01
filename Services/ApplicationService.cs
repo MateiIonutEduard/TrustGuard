@@ -29,6 +29,32 @@ namespace TrustGuard.Services
             this.jwtSettings = jwtSettings;
         }
 
+        public async Task<AccountBodyModel?> GetAccountByAppAsync(string accessToken)
+        {
+            // find key pair by access token
+            KeyPair keyPair = await guardContext.KeyPair
+                .FirstOrDefaultAsync(e => e.AccessToken.CompareTo(accessToken) == 0 && !e.IsRevoked);
+
+            if(keyPair != null)
+            {
+                // get key pair owner
+                Account? account = await guardContext.Account
+                    .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+
+                var body = new AccountBodyModel
+                {
+                    id = account.Id,
+                    username = account.Username,
+                    address = account.Address,
+                    profile = $"{jwtSettings.Issuer}/Account/Show/?id={account.Id}"
+                };
+
+                return body;
+            }
+
+            return null;
+        }
+
         public async Task<Application?> GetApplicationByIdAsync(string? clientId, string? clientSecret)
         {
             Application? app = await guardContext.Application
