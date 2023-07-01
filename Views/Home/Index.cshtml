@@ -198,10 +198,10 @@
                                         </a>
                                         @if(!string.IsNullOrEmpty(userId))
                                         {
-                                            <button class="btn btn-sm" style="text-decoration: none;" title="Remove Application" data-bs-toggle="modal" data-bs-target="#removeAppModal">
+                                            <button class="btn btn-sm" style="text-decoration: none;" title="Remove Application" data-bs-toggle="modal" data-bs-target="#removeAppModal_@app.Id">
                                                 <span class="fa fa-trash text-danger"></span>
                                             </button>
-                                            <div class="modal fade" id="removeAppModal" tabindex="-1" aria-labelledby="appModalLabel" aria-hidden="true">
+                                            <div class="modal fade" id="removeAppModal_@app.Id" tabindex="-1" aria-labelledby="appModalLabel" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-centered">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
