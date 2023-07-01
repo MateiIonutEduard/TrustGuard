@@ -17,16 +17,76 @@ namespace TrustGuard.Services
     {
         readonly IAppSettings appSettings;
         readonly IJwtSettings jwtSettings;
+        readonly IAdminService adminService;
         readonly TrustGuardContext guardContext;
         readonly RandomNumberGenerator rand;
 
-        public ApplicationService(IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
+        public ApplicationService(IAdminService adminService, IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
         { 
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
+            this.adminService = adminService;
 
             this.appSettings = appSettings;
             this.jwtSettings = jwtSettings;
+        }
+
+        public async Task<int> ValidateLifetime(string access_token)
+        {
+            DomainParametersModel dpm = (
+            from d in await guardContext.Domain.ToListAsync()
+            join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
+            join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
+            join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
+            where k.AccessToken.CompareTo(access_token) == 0 && (a.IsDeleted == null || (a.IsDeleted != null && !a.IsDeleted.Value)) && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+            select new DomainParametersModel
+            {
+                a = new BigInteger(d.a),
+                b = new BigInteger(d.b),
+                p = new BigInteger(d.p),
+                N = new BigInteger(d.N),
+                basePoint = new ECPoint(new BigInteger(b.x), new BigInteger(b.y))
+            }).FirstOrDefault();
+
+            KeyPair keyPair = await guardContext.KeyPair
+                .FirstOrDefaultAsync(k => k.AccessToken.CompareTo(access_token) == 0 && !k.IsRevoked);
+
+            if(keyPair != null)
+            {
+                EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
+                TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
+
+                int result = tokenFactory.VerifyToken(keyPair.RefreshToken, access_token, keyPair.ValidateLifetime);
+                return result;
+            }
+
+            return -2;
+        }
+
+        public async Task<AccountBodyModel?> GetAccountByAppAsync(string accessToken)
+        {
+            // find key pair by access token
+            KeyPair keyPair = await guardContext.KeyPair
+                .FirstOrDefaultAsync(e => e.AccessToken.CompareTo(accessToken) == 0 && !e.IsRevoked);
+
+            if(keyPair != null)
+            {
+                // get key pair owner
+                Account? account = await guardContext.Account
+                    .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+
+                var body = new AccountBodyModel
+                {
+                    id = account.Id,
+                    username = account.Username,
+                    address = account.Address,
+                    profile = $"{jwtSettings.Issuer}Account/Show/?id={account.Id}"
+                };
+
+                return body;
+            }
+
+            return null;
         }
 
         public async Task<Application?> GetApplicationByIdAsync(string? clientId, string? clientSecret)
@@ -130,6 +190,7 @@ namespace TrustGuard.Services
                         RefreshToken = tokenModel.refresh_token,
                         AccessToken = tokenModel.access_token,
                         BasePointId = keyPair.BasePointId,
+                        ValidateLifetime = validateLifetime,
                         AccountId = account.Id,
                         IsRevoked = false
                     };
@@ -203,6 +264,7 @@ namespace TrustGuard.Services
                             SecureKey = tokenModel.secretKey,
                             RefreshToken = tokenModel.refresh_token,
                             AccessToken = tokenModel.access_token,
+                            ValidateLifetime = validateLifetime,
                             BasePointId = basePoint.Id,
                             AccountId = account.Id,
                             IsRevoked = false
@@ -211,6 +273,24 @@ namespace TrustGuard.Services
                         /* save keypair to database */
                         guardContext.KeyPair.Add(keyPair);
                         await guardContext.SaveChangesAsync();
+
+                        /* get identification email template */
+                        string message = File.ReadAllText($"./TrustAdmin/AreYou.txt");
+                        int index = message.IndexOf('{');
+
+                        string body = message;
+                        int k = 0;
+
+                        while (index >= 0)
+                        {
+                            string str = k == 0 ? $"{account.Username}" : $"\'{jwtSettings.Issuer}Home/Report";
+                            body = $"{body.Substring(0, index - 1)} {str}{body.Substring(index + 4)}";
+                            index = body.IndexOf('{');
+                            k++;
+                        }
+
+                        /* create email body from template, after that get status code */
+                        adminService.SendEmail(account.Address, "TrustGuard Support", body);
 
                         TokenViewModel token = new TokenViewModel
                         {
