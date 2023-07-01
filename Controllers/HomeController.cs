@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
 using TrustGuard.Data;
 using TrustGuard.Environment;
 using TrustGuard.Models;
@@ -53,15 +54,23 @@ namespace TrustGuard.Controllers
 
         public IActionResult Auth(string? returnUrl)
         {
-            /*if (!Request.Cookies.ContainsKey("ClientId") || !Request.Cookies.ContainsKey("ClientSecret"))
+            if (!Request.Cookies.ContainsKey("ClientId") || !Request.Cookies.ContainsKey("ClientSecret"))
                 return BadRequest();
 
+            /* get app credentials */
             string clientId = Request.Cookies["ClientId"];
-            string clientSecret = Request.Cookies["ClientSecret"];*/
+            string clientSecret = Request.Cookies["ClientSecret"];
 
-            Response.Cookies.Append("ClientId", "cbc0831e-5180-42a7-9256-fc6d6a1b04b4");
-			Response.Cookies.Append("ClientSecret", "GgujbMWAgOux+maVz96ybbcPTZVaXTYiEFKUbQ0F7VQ=");
-            Response.Cookies.Append("Callback", returnUrl);
+            /* decode callback url */
+            byte[] decodedUrlBytes = Convert.FromBase64String(returnUrl);
+            string decodedUrl = Encoding.ASCII.GetString(decodedUrlBytes);
+
+            // save into cookies
+            Response.Cookies.Append("ClientId", clientId);
+			Response.Cookies.Append("ClientSecret", clientSecret);
+
+            /* show page view */
+            Response.Cookies.Append("Callback", decodedUrl);
 			return View();
         }
 
@@ -89,8 +98,6 @@ namespace TrustGuard.Controllers
 				/* save tokens and go back */
 				Response.Cookies.Append("access_token", token.access_token);
                 Response.Cookies.Append("refresh_token", token.refresh_token);
-
-                Response.Cookies.Delete("Callback");
                 return Redirect(returnUrl);
             }
             else
@@ -125,7 +132,6 @@ namespace TrustGuard.Controllers
 					Response.Cookies.Append("access_token", token.access_token);
 					Response.Cookies.Append("refresh_token", token.refresh_token);
 
-					Response.Cookies.Delete("Callback");
 					var claims = new Claim[]
                     {
 				         new Claim("id", res.id.Value.ToString()),
@@ -147,7 +153,6 @@ namespace TrustGuard.Controllers
 				return Unauthorized();
 		}
 
-        [HttpPost]
         public async Task<IActionResult> Revoke()
         {
 			/* get app credentials and callback url */
@@ -168,7 +173,7 @@ namespace TrustGuard.Controllers
 						.RevokeTokenAsync(refresh_token,
 						access_token,
 						clientId,
-						clientSecret, true);
+						clientSecret);
 
                     Response.Cookies.Delete("access_token");
 					Response.Cookies.Delete("refresh_token");
