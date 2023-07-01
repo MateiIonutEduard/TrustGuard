@@ -60,12 +60,19 @@ namespace TrustGuard.Controllers
             {
                 // auth token
                 string access_token = header.Split(' ')[1];
+
+                int res = await applicationService.ValidateLifetime(access_token);
                 var body = await applicationService.GetAccountByAppAsync(access_token);
 
-                if (body != null)
-                    return Ok(body);
+                if (res == 1)
+                {
+                    if (body != null)
+                        return Ok(body);
+                    else
+                        return NotFound();
+                }
                 else
-                    return NotFound();
+                    return Unauthorized();
             }
             else
                 return Unauthorized();

@@ -7,6 +7,7 @@ namespace TrustGuard.Services
     public interface IApplicationService
     {
         Task<Application?> GetApplicationAsync(int id);
+        Task<int> ValidateLifetime(string access_token);
         Task<bool?> RestoreApplicationAsync(int userId, int appId);
         Task<AccountBodyModel?> GetAccountByAppAsync(string accessToken);
         Task<bool?> RemoveApplicationAsync(bool complete, int userId, int appId);

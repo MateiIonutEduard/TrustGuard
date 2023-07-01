@@ -29,6 +29,38 @@ namespace TrustGuard.Services
             this.jwtSettings = jwtSettings;
         }
 
+        public async Task<int> ValidateLifetime(string access_token)
+        {
+            DomainParametersModel dpm = (
+            from d in await guardContext.Domain.ToListAsync()
+            join a in await guardContext.Application.ToListAsync() on d.Id equals a.DomainId
+            join b in await guardContext.BasePoint.ToListAsync() on a.Id equals b.ApplicationId
+            join k in await guardContext.KeyPair.ToListAsync() on b.Id equals k.BasePointId
+            where k.AccessToken.CompareTo(access_token) == 0 && (a.IsDeleted == null || (a.IsDeleted != null && !a.IsDeleted.Value)) && (b.IsDeleted == null || (b.IsDeleted != null && !b.IsDeleted.Value)) && !k.IsRevoked
+            select new DomainParametersModel
+            {
+                a = new BigInteger(d.a),
+                b = new BigInteger(d.b),
+                p = new BigInteger(d.p),
+                N = new BigInteger(d.N),
+                basePoint = new ECPoint(new BigInteger(b.x), new BigInteger(b.y))
+            }).FirstOrDefault();
+
+            KeyPair keyPair = await guardContext.KeyPair
+                .FirstOrDefaultAsync(k => k.AccessToken.CompareTo(access_token) == 0 && !k.IsRevoked);
+
+            if(keyPair != null)
+            {
+                EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
+                TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
+
+                int result = tokenFactory.VerifyToken(keyPair.RefreshToken, access_token, keyPair.ValidateLifetime);
+                return result;
+            }
+
+            return -2;
+        }
+
         public async Task<AccountBodyModel?> GetAccountByAppAsync(string accessToken)
         {
             // find key pair by access token
