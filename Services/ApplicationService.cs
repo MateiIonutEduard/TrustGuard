@@ -156,6 +156,7 @@ namespace TrustGuard.Services
                         RefreshToken = tokenModel.refresh_token,
                         AccessToken = tokenModel.access_token,
                         BasePointId = keyPair.BasePointId,
+                        ValidateLifetime = validateLifetime,
                         AccountId = account.Id,
                         IsRevoked = false
                     };
@@ -229,6 +230,7 @@ namespace TrustGuard.Services
                             SecureKey = tokenModel.secretKey,
                             RefreshToken = tokenModel.refresh_token,
                             AccessToken = tokenModel.access_token,
+                            ValidateLifetime = validateLifetime,
                             BasePointId = basePoint.Id,
                             AccountId = account.Id,
                             IsRevoked = false
