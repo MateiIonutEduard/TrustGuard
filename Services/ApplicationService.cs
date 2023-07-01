@@ -38,7 +38,7 @@ namespace TrustGuard.Services
             return app;
 		}
 
-        public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
+        public async Task<int> RevokeTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret, bool validateLifetime = false)
         {
             DomainParametersModel dpm = (
                 from d in await guardContext.Domain.ToListAsync()
@@ -67,7 +67,7 @@ namespace TrustGuard.Services
                 EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
 
-                int result = tokenFactory.VerifyToken(refreshToken, accessToken);
+                int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
                 return result;
             }
 
@@ -75,7 +75,7 @@ namespace TrustGuard.Services
             return -2;
         }
 
-        public async Task<TokenViewModel?> RefreshTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret)
+        public async Task<TokenViewModel?> RefreshTokenAsync(string refreshToken, string accessToken, string? clientId, string? clientSecret, bool validateLifetime = false)
         {
             DomainParametersModel dpm = (
                 from d in await guardContext.Domain.ToListAsync()
@@ -107,7 +107,7 @@ namespace TrustGuard.Services
 
                 EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
-                int result = tokenFactory.VerifyToken(refreshToken, accessToken);
+                int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
 
                 /* if access token not expired */
                 if (result == 1)
@@ -123,7 +123,7 @@ namespace TrustGuard.Services
                     desc.Subject.AddClaim(ClaimType.Subject, account.Username);
                     desc.Subject.AddClaim(ClaimType.Email, account.Address);
 
-                    var tokenModel = tokenFactory.SignToken(desc);
+                    var tokenModel = tokenFactory.SignToken(desc, validateLifetime);
                     KeyPair newKeyPair = new KeyPair
                     {
                         SecureKey = tokenModel.secretKey,
@@ -151,7 +151,7 @@ namespace TrustGuard.Services
             return null;
         }
 
-        public async Task<TokenViewModel?> AuthenticateAsync(string? userId, string? clientId, string? clientSecret)
+        public async Task<TokenViewModel?> AuthenticateAsync(string? userId, string? clientId, string? clientSecret, bool validateLifetime = false)
         {
             if (!string.IsNullOrEmpty(userId))
             {
@@ -197,7 +197,7 @@ namespace TrustGuard.Services
                         ECPoint G = new ECPoint(x, y);
                         TokenFactory tokenFactory = new TokenFactory(curve, G);
 
-                        tokenModel = tokenFactory.SignToken(desc);
+                        tokenModel = tokenFactory.SignToken(desc, validateLifetime);
                         KeyPair keyPair = new KeyPair
                         {
                             SecureKey = tokenModel.secretKey,

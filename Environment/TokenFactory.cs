@@ -39,13 +39,14 @@ namespace TrustGuard.Environment
 			return timestamp;
 		}
 
-		public TokenModel SignToken(SecurityTokenDescription tokenDescription)
+		public TokenModel SignToken(SecurityTokenDescription tokenDescription, bool validateLifetime = false)
 		{
 			SecurityClaimsIdentity identity = tokenDescription.Subject;
 			identity.AddClaim(ClaimType.Issuer, tokenDescription.Issuer);
-
 			identity.AddClaim(ClaimType.Audience, tokenDescription.Audience);
-			identity.AddClaim(ClaimType.Expires, GetUnixTime(DateTime.UtcNow.AddMinutes(5)).ToString());
+
+			if(validateLifetime) 
+				identity.AddClaim(ClaimType.Expires, GetUnixTime(DateTime.UtcNow.AddMinutes(5)).ToString());
 
 			string header = GetHeader();
 			string payload = identity.GetPayload();
@@ -87,7 +88,7 @@ namespace TrustGuard.Environment
 			return tokenModel;
 		}
 
-		public int VerifyToken(string publicKey, string accessToken)
+		public int VerifyToken(string publicKey, string accessToken, bool validateLifetime = false)
 		{
 			string[] parts = accessToken.Split(".");
 			byte[] signature = Convert.FromBase64String(parts[2]);
@@ -100,12 +101,17 @@ namespace TrustGuard.Environment
 			string content = Encoding.ASCII.GetString(payloadPart);
 
 			Dictionary<string, string> keyValues = JsonConvert.DeserializeObject<Dictionary<string, string>>(content);
-			int seconds = Convert.ToInt32(keyValues[ClaimType.Expires]);
 
-			/* check if token expired */
-			DateTime current = DateTime.UtcNow;
-			DateTime signDate = new DateTime(1970, 1, 1).AddSeconds(seconds);
-			if (current.CompareTo(signDate) == 1) return 0;
+			/* if validate lifetime enabled */
+			if (validateLifetime)
+			{
+				/* check if token expired */
+				DateTime current = DateTime.UtcNow;
+				int seconds = Convert.ToInt32(keyValues[ClaimType.Expires]);
+
+				DateTime signDate = new DateTime(1970, 1, 1).AddSeconds(seconds);
+				if (current.CompareTo(signDate) == 1) return 0;
+			}
 
 			byte[] data = Convert.FromBase64String(publicKey);
 			byte[] xdata = new byte[32];
