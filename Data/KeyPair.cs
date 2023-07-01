@@ -11,6 +11,7 @@ namespace TrustGuard.Data
 
         public int AccountId { get; set; }
         public Account Account { get; set; }
+        public bool ValidateLifetime { get; set; }
 
         public int BasePointId { get; set; }
         public BasePoint BasePoint { get; set; }
