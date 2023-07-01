@@ -46,7 +46,7 @@ namespace TrustGuard.Services
                     id = account.Id,
                     username = account.Username,
                     address = account.Address,
-                    profile = $"{jwtSettings.Issuer}/Account/Show/?id={account.Id}"
+                    profile = $"{jwtSettings.Issuer}Account/Show/?id={account.Id}"
                 };
 
                 return body;

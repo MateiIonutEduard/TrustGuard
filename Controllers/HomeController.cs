@@ -52,6 +52,25 @@ namespace TrustGuard.Controllers
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Me()
+        {
+            string header = HttpContext.Request.Headers["Authorization"];
+            if (!string.IsNullOrEmpty(header))
+            {
+                // auth token
+                string access_token = header.Split(' ')[1];
+                var body = await applicationService.GetAccountByAppAsync(access_token);
+
+                if (body != null)
+                    return Ok(body);
+                else
+                    return NotFound();
+            }
+            else
+                return Unauthorized();
+        }
+
         public IActionResult Auth(string? returnUrl)
         {
             if (!Request.Cookies.ContainsKey("ClientId") || !Request.Cookies.ContainsKey("ClientSecret"))
