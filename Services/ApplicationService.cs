@@ -17,13 +17,15 @@ namespace TrustGuard.Services
     {
         readonly IAppSettings appSettings;
         readonly IJwtSettings jwtSettings;
+        readonly IAdminService adminService;
         readonly TrustGuardContext guardContext;
         readonly RandomNumberGenerator rand;
 
-        public ApplicationService(IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
+        public ApplicationService(IAdminService adminService, IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
         { 
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
+            this.adminService = adminService;
 
             this.appSettings = appSettings;
             this.jwtSettings = jwtSettings;
@@ -271,6 +273,24 @@ namespace TrustGuard.Services
                         /* save keypair to database */
                         guardContext.KeyPair.Add(keyPair);
                         await guardContext.SaveChangesAsync();
+
+                        /* get identification email template */
+                        string message = File.ReadAllText($"./TrustAdmin/AreYou.txt");
+                        int index = message.IndexOf('{');
+
+                        string body = message;
+                        int k = 0;
+
+                        while (index >= 0)
+                        {
+                            string str = k == 0 ? $"{account.Username}" : $"\'{jwtSettings.Issuer}Home/Report";
+                            body = $"{body.Substring(0, index - 1)} {str}{body.Substring(index + 4)}";
+                            index = body.IndexOf('{');
+                            k++;
+                        }
+
+                        /* create email body from template, after that get status code */
+                        adminService.SendEmail(account.Address, "TrustGuard Support", body);
 
                         TokenViewModel token = new TokenViewModel
                         {
