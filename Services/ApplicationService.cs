@@ -371,9 +371,11 @@ namespace TrustGuard.Services
             return application;
         }
 
-        public async Task<ApplicationDetailsModel> GetApplicationDetailsAsync(int? id)
+        public async Task<ApplicationDetailsModel> GetApplicationDetailsAsync(int? id, int? page)
         {
             if (id == null) return null;
+            int index = (page != null && page.Value >= 1) ? page.Value - 1 : 0;
+
             Application? app = await guardContext.Application
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -426,7 +428,10 @@ namespace TrustGuard.Services
 
                 details.Results = counter;
                 details.TotalPages = totalPages;
-                details.Logs = logs.ToArray();
+
+                /* paginate results */
+                details.Logs = logs.Skip(8 * index)
+                    .Take(8).ToArray();
 
                 /* now, return app details model */
                 details.ConnectedUsers = map.Count;

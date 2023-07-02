@@ -5,7 +5,8 @@
 
 @{
     int? index = Context.Request.Query.ContainsKey("id") ? Convert.ToInt32(Context.Request.Query["id"]) : null;
-    ApplicationDetailsModel? details = await appService.GetApplicationDetailsAsync(index);
+    int? page = Context.Request.Query.Keys.Contains("page") ? Convert.ToInt32(Context.Request.Query["page"]) : null;
+    ApplicationDetailsModel? details = await appService.GetApplicationDetailsAsync(index, page);
 }
 @if(Context.User.Identity!.IsAuthenticated) 
 {
