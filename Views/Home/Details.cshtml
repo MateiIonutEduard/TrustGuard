@@ -7,6 +7,7 @@
     int? index = Context.Request.Query.ContainsKey("id") ? Convert.ToInt32(Context.Request.Query["id"]) : null;
     int? page = Context.Request.Query.Keys.Contains("page") ? Convert.ToInt32(Context.Request.Query["page"]) : null;
     ApplicationDetailsModel? details = await appService.GetApplicationDetailsAsync(index, page);
+    string logRoute = page != null && page.Value > 1 ? $"/Log/?page={page.Value}" : "/Log/";
 }
 @if(Context.User.Identity!.IsAuthenticated) 
 {
@@ -181,9 +182,10 @@
                                                                 <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal">
                                                                     <i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel
                                                                 </button>
-                                                                <form action="/Log/" method="post">
+                                                                <form action="@logRoute" method="post">
                                                                     <input type="hidden" id="appId" name="appId" value="@index" />
                                                                     <input type="hidden" id="logId" name="logId" value="@log.Id" />
+                                                                    <input type="hidden" id="clientId" name="clientId" value="@details.ClientId" />
                                                                     <button class="btn btn-sm btn-danger" type="submit" title="Remove Log">
                                                                         <i class="fa fa-trash" style="color: white;" aria-hidden="true"></i>&nbsp;Remove
                                                                     </button>
