@@ -17,16 +17,20 @@ namespace TrustGuard.Services
     {
         readonly IAppSettings appSettings;
         readonly IJwtSettings jwtSettings;
+
         readonly IAdminService adminService;
+        readonly LogService logService;
+
         readonly TrustGuardContext guardContext;
         readonly RandomNumberGenerator rand;
 
-        public ApplicationService(IAdminService adminService, IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
+        public ApplicationService(LogService logService, IAdminService adminService, IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
         { 
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
             this.adminService = adminService;
 
+            this.logService = logService;
             this.appSettings = appSettings;
             this.jwtSettings = jwtSettings;
         }
@@ -749,6 +753,10 @@ namespace TrustGuard.Services
 
                 guardContext.BasePoint.Add(G);
                 await guardContext.SaveChangesAsync();
+
+                /* write new info log at database */
+                string body = $"You've created a new app, named {app.AppName}.";
+                await logService.CreateLogAsync(body, Models.LogLevel.Info);
 
                 /* send demand when the flag is activated */
                 if (appSettings.EnableDemandSending != null && appSettings.EnableDemandSending.Value)

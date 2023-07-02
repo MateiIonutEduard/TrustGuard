@@ -16,7 +16,7 @@ namespace TrustGuard.Services
             logs = mongoDatabase.GetCollection<Log>(bridgeWaterSettings.Value.CollectionName);
         }
 
-        public async Task CreateLogAsync(string body, string? webcode, LogLevel logLevel)
+        public async Task CreateLogAsync(string body, LogLevel logLevel, string? webcode = null)
         {
             Log log = new Log
             {
