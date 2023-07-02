@@ -132,6 +132,28 @@ namespace TrustGuard.Services
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
 
                 int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
+                string message = string.Empty;
+
+                if(result < 1)
+                {
+                    /* needs account username */
+                    Account account = await guardContext.Account
+                        .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+
+                    if(result == 0)
+                    {
+                        /* possibly suspicious */
+                        message = $"User {account.Username} requests authorization revocation, with outdated access token.";
+                        await logService.CreateLogAsync(message, Models.LogLevel.Warning);
+                    }
+                    else
+                    {
+                        /* be careful, this is dangerous */
+                        message = "Anonymous user try to send invalid signed token.";
+                        await logService.CreateLogAsync(message, Models.LogLevel.Danger);
+                    }
+                }
+
                 return result;
             }
 
@@ -309,9 +331,9 @@ namespace TrustGuard.Services
                         return token;
                     }
 
-                    /* fatal status code */
+                    /* error status code */
                     string logMessage = $"The application {clientId} was not found.";
-                    await logService.CreateLogAsync(logMessage, Models.LogLevel.Fatal);
+                    await logService.CreateLogAsync(logMessage, Models.LogLevel.Error);
                 }
             }
 
