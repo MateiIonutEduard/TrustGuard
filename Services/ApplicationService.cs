@@ -314,6 +314,60 @@ namespace TrustGuard.Services
             return application;
         }
 
+        public async Task<ApplicationDetailsModel> GetApplicationDetailsAsync(int id)
+        {
+            Application? app = await guardContext.Application
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if(app != null)
+            {
+                /* main app details */
+                ApplicationDetailsModel details = new ApplicationDetailsModel
+                {
+                    Id = app.Id,
+                    AppName = app.AppName,
+                    ClientId = app.ClientId,
+                    AccountId = app.AccountId,
+                    Description = app.Description,
+                    ClientSecret = app.ClientSecret,
+                    ModifiedAt = (app.ModifiedAt != null ? app.ModifiedAt.Value : app.CreatedAt),
+                    IsDeleted = (app.IsDeleted != null ? app.IsDeleted.Value : false),
+                    AppType = app.AppType,
+                    ConnectedUsers = 0
+                };
+
+                /* unicity of user accounts */
+                var map = new HashSet<int>();
+
+                /* for each base point from elliptic curve */
+                List<BasePoint> points = await guardContext.BasePoint
+                    .Where(p => p.ApplicationId == app.Id)
+                    .ToListAsync();
+
+                foreach (BasePoint point in points)
+                {
+                    /* for all key pairs */
+                    List<KeyPair> keyPairs = await guardContext.KeyPair
+                        .Where(k => k.BasePointId == point.Id)
+                        .ToListAsync();
+
+                    foreach(KeyPair keyPair in keyPairs)
+                    {
+                        /* add unique user account */
+                        if(!map.Contains(keyPair.AccountId))
+                            map.Add(keyPair.AccountId);
+                    }
+                }
+
+                /* now, return app details model */
+                details.ConnectedUsers = map.Count;
+                return details;
+            }
+
+            // not found
+            return null;
+        }
+
         public async Task<ApplicationResultModel> GetAppsByFilterAsync(bool complete, AppQueryFilter filter, string? userId, int? page)
         {
             int? uid = !string.IsNullOrEmpty(userId) ? Convert.ToInt32(userId) : null;
