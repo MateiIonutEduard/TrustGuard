@@ -1,6 +1,7 @@
 ﻿@using TrustGuard.Models;
 @using TrustGuard.Services;
 @inject IApplicationService appService;
+@inject IJwtSettings settings;
 
 @{
     int? index = Context.Request.Query.ContainsKey("id") ? Convert.ToInt32(Context.Request.Query["id"]) : null;
@@ -40,11 +41,42 @@
                     <p>@details.ModifiedAt.ToString("dd-MM-yyyy HH:mm:ss")</p>
                 </div>
             </div><hr/>
+            <h5 style="margin-left: 8%; color: #292b2c;">Description</h5>
             <div class="row">
                 <div class="col-1"></div>
                 <div class="col-10">@Html.Raw(details.Description)</div>
                 <div class="col-1"></div>
             </div><hr/>
+            <h5 style="margin-left: 8%; color: #292b2c;">How to use</h5><br/>
+            @if(details.AppType == 1)
+            {
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>Auth Endpoint:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="auth" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)Home/Auth/" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('auth')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div><br/>
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>Revoke Endpoint:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="revoke" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)Home/Revoke/" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('revoke')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div><br/>
+            }
         </div>
     </section>
 }
