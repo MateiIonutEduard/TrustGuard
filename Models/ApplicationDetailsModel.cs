@@ -14,5 +14,8 @@ namespace TrustGuard.Models
         public DateTime ModifiedAt { get; set; }
         public bool IsDeleted { get; set; }
         public int AppType { get; set; }
+        public Log[]? Logs { get; set; }
+        public int TotalPages { get; set; }
+        public int Results { get; set; }
     }
 }

@@ -149,6 +149,56 @@
                     </div><hr />
                     <br/>
                 }
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col-9">
+                        <h5>All Logs</h5>
+                        @if (details.Logs != null && details.Results > 0)
+                        {
+                            <table class="table table-light table-hover" id="products">
+                                <tbody>
+                                    @foreach (Log log in details.Logs)
+                                    {
+                                        <tr>
+                                            <td id="appField">@log.Message</td>
+                                            <td id="appField">@log.CreatedAt.ToString("dd-MM-yyyy HH:mm:ss")</td>
+                                            <td id="appField">
+                                                <button class="btn btn-sm" style="text-decoration: none;" title="Delete Log" data-bs-toggle="modal" data-bs-target="#removeAppModal_@log.Id">
+                                                    <span class="fa fa-trash text-danger"></span>
+                                                </button>
+                                                <div class="modal fade" id="removeAppModal_@log.Id" tabindex="-1" aria-labelledby="appModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="appModalLabel">Remove Log</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure that want to remove completely this log?</p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal">
+                                                                    <i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel
+                                                                </button>
+                                                                <form action="#" method="post">
+                                                                    <input type="hidden" id="appId" name="appId" value="@log.Id" />
+                                                                    <button class="btn btn-sm btn-danger" type="submit" title="Remove Log">
+                                                                        <i class="fa fa-trash" style="color: white;" aria-hidden="true"></i>&nbsp;Remove
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                    <div class="col-2"></div>
+                </div>
             </div>
         </section>
     }

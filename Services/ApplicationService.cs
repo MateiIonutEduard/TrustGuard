@@ -417,6 +417,17 @@ namespace TrustGuard.Services
                     }
                 }
 
+                List<Log> logs = await logService.GetLogsByApplicationAsync(app.ClientId);
+                int counter = logs.Count;
+                int totalPages = counter >> 3;
+
+                if ((counter & 0x7) != 0)
+                    totalPages++;
+
+                details.Results = counter;
+                details.TotalPages = totalPages;
+                details.Logs = logs.ToArray();
+
                 /* now, return app details model */
                 details.ConnectedUsers = map.Count;
                 return details;

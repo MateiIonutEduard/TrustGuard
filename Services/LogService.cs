@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using TrustGuard.Models;
 using LogLevel = TrustGuard.Models.LogLevel;
+#pragma warning disable
 
 namespace TrustGuard.Services
 {
@@ -14,6 +15,20 @@ namespace TrustGuard.Services
             var mongoClient = new MongoClient(bridgeWaterSettings.Value.ConnectionString);
             var mongoDatabase = mongoClient.GetDatabase(bridgeWaterSettings.Value.DatabaseName);
             logs = mongoDatabase.GetCollection<Log>(bridgeWaterSettings.Value.CollectionName);
+        }
+
+        public async Task<List<Log>> GetLogsByApplicationAsync(string clientId)
+        {
+            /* get log list */
+            if (!string.IsNullOrEmpty(clientId))
+            {
+                List<Log> list = await logs.Find(e => e.AppId.CompareTo(clientId) == 0)
+                    .ToListAsync();
+
+                return list;
+            }
+
+            return null;
         }
 
         public async Task CreateLogAsync(string AppId, string body, LogLevel logLevel, string? webcode = null)
