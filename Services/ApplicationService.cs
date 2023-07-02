@@ -296,6 +296,10 @@ namespace TrustGuard.Services
                         /* create email body from template, after that get status code */
                         adminService.SendEmail(account.Address, "TrustGuard Support", body);
 
+                        /* create log, that everything work successful */
+                        string logBody = $"User {account.Username} successfully signed in to application.";
+                        await logService.CreateLogAsync(logBody, Models.LogLevel.Info);
+
                         TokenViewModel token = new TokenViewModel
                         {
                             access_token = tokenModel.access_token,
@@ -304,9 +308,15 @@ namespace TrustGuard.Services
 
                         return token;
                     }
+
+                    /* fatal status code */
+                    string logMessage = $"The application {clientId} was not found.";
+                    await logService.CreateLogAsync(logMessage, Models.LogLevel.Fatal);
                 }
             }
 
+            string msg = "Unknown user request anonymus authentication at this app.";
+            await logService.CreateLogAsync(msg, Models.LogLevel.Warning);
             return null;
         }
 
