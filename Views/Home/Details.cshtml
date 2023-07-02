@@ -8,6 +8,24 @@
     int? page = Context.Request.Query.Keys.Contains("page") ? Convert.ToInt32(Context.Request.Query["page"]) : null;
     ApplicationDetailsModel? details = await appService.GetApplicationDetailsAsync(index, page);
     string logRoute = page != null && page.Value > 1 ? $"/Log/?page={page.Value}" : "/Log/";
+    int nextPage = 0;
+
+    int previousPage = page != null ? page.Value - 1 : 1;
+    int mainPage = page != null ? page.Value : 1;
+
+    if (Context.User.Identity!.IsAuthenticated)
+    {
+        if (previousPage <= 0)
+        {
+            previousPage = 1;
+
+            if (previousPage < details.TotalPages)
+                nextPage = 2;
+        }
+
+        if (mainPage <= details.TotalPages - 1)
+            nextPage = mainPage + 1;
+    }
 }
 @if(Context.User.Identity!.IsAuthenticated) 
 {
@@ -199,6 +217,38 @@
                                     }
                                 </tbody>
                             </table>
+                            <div class="row" style="margin-left: 10%; margin-bottom: 4%;">
+                                <div class="col-4">
+                                    <span style="font-weight: bold; color: #505d6d;">Total <small style="font-weight: bold; color: #28895c !important;">@details.Results</small> Results</span>
+                                </div>
+                                <div class="col-8">
+                                    @if (details.TotalPages > 1)
+                                    {
+                                        <nav id="navigation">
+                                            <ul class="pagination">
+                                                @if (mainPage > 1)
+                                                {
+                                                    <li class="page-item"><a class="page-link" href="/Home/Details/?id=@index&page=@previousPage">&lt;&lt;</a></li>
+                                                    <li class="page-item"><a class="page-link" href="/Home/Details/?id=@index&page=@previousPage">@previousPage</a></li>
+                                                }
+                                                <li class="page-item active"><a class="page-link" style="color: #ffa571 !important;">@mainPage</a></li>
+
+                                                @if (nextPage <= details.TotalPages && mainPage < details.TotalPages)
+                                                {
+                                                    <li class="page-item"><a class="page-link" href="/Home/Details/?id=@index&page=@nextPage">@nextPage</a></li>
+                                                }
+
+                                                @if (nextPage <= details.TotalPages && mainPage < details.TotalPages)
+                                                {
+                                                    <li class="page-item"><a class="page-link" href="/Home/Details/?id=@index&page=@nextPage">&gt;&gt;</a></li>
+                                                }
+                                            </ul>
+                                        </nav>
+                                        <br />
+                                        <br />
+                                    }
+                                </div>
+                            </div>
                         }
                     </div>
                     <div class="col-2"></div>
