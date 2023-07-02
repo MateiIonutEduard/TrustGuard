@@ -195,7 +195,9 @@ namespace TrustGuard.Services
 
                 EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
+
                 int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
+                string message = string.Empty;
 
                 /* if access token not expired */
                 if (result == 1)
@@ -233,7 +235,24 @@ namespace TrustGuard.Services
                         refresh_token = tokenModel.refresh_token
                     };
 
+                    /* create log, that everything work successful */
+                    string logBody = $"User {account.Username} successfully exchange token pair that needed at authorization.";
+                    await logService.CreateLogAsync(clientId, logBody, Models.LogLevel.Info);
+
                     return token;
+                }
+                else
+                if(result == 0)
+                {
+                    /* suspicious token pair exchange, with outdated access token */
+                    message = $"User {account.Username} sent outdated access token.";
+                    await logService.CreateLogAsync(clientId, message, Models.LogLevel.Warning);
+                }
+                else
+                {
+                    /* dangerous token pair exchange */
+                    message = "Anonymous user try to exchange token pair by using invalid signed token.";
+                    await logService.CreateLogAsync(clientId, message, Models.LogLevel.Danger);
                 }
             }
 
