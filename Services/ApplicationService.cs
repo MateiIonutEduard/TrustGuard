@@ -144,13 +144,13 @@ namespace TrustGuard.Services
                     {
                         /* possibly suspicious */
                         message = $"User {account.Username} requests authorization revocation, with outdated access token.";
-                        await logService.CreateLogAsync(message, Models.LogLevel.Warning);
+                        await logService.CreateLogAsync(clientId, message, Models.LogLevel.Warning);
                     }
                     else
                     {
                         /* be careful, this is dangerous */
                         message = "Anonymous user try to send invalid signed token.";
-                        await logService.CreateLogAsync(message, Models.LogLevel.Danger);
+                        await logService.CreateLogAsync(clientId, message, Models.LogLevel.Danger);
                     }
                 }
 
@@ -320,7 +320,7 @@ namespace TrustGuard.Services
 
                         /* create log, that everything work successful */
                         string logBody = $"User {account.Username} successfully signed in to application.";
-                        await logService.CreateLogAsync(logBody, Models.LogLevel.Info);
+                        await logService.CreateLogAsync(clientId, logBody, Models.LogLevel.Info);
 
                         TokenViewModel token = new TokenViewModel
                         {
@@ -333,12 +333,12 @@ namespace TrustGuard.Services
 
                     /* error status code */
                     string logMessage = $"The application {clientId} was not found.";
-                    await logService.CreateLogAsync(logMessage, Models.LogLevel.Error);
+                    await logService.CreateLogAsync(clientId, logMessage, Models.LogLevel.Error);
                 }
             }
 
             string msg = "Unknown user request anonymus authentication at this app.";
-            await logService.CreateLogAsync(msg, Models.LogLevel.Warning);
+            await logService.CreateLogAsync(clientId, msg, Models.LogLevel.Warning);
             return null;
         }
 
@@ -788,7 +788,7 @@ namespace TrustGuard.Services
 
                 /* write new info log at database */
                 string body = $"You've created a new app, named {app.AppName}.";
-                await logService.CreateLogAsync(body, Models.LogLevel.Info);
+                await logService.CreateLogAsync(clientId, body, Models.LogLevel.Info);
 
                 /* send demand when the flag is activated */
                 if (appSettings.EnableDemandSending != null && appSettings.EnableDemandSending.Value)
