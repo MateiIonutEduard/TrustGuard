@@ -7,161 +7,173 @@
     int? index = Context.Request.Query.ContainsKey("id") ? Convert.ToInt32(Context.Request.Query["id"]) : null;
     ApplicationDetailsModel? details = await appService.GetApplicationDetailsAsync(index);
 }
-@if(details != null)
+@if(Context.User.Identity!.IsAuthenticated) 
 {
-    <section style="background-color: #d3cccc;">
-        <div class="container-fluid"><br/>
-            <div class="row">
-                <div class="col-4" id="appName">
-                    <img src="/Home/Show/?id=@details.Id" width="64" height="64" />
-                    <h4 id="title">@details.AppName</h4>
-                </div>
-                <div class="col-4">
-                </div>
-                <div class="col-4">
-                    <div class="row">
-                        <div class="col-4">
-                            <p style="color: #493b3b;">Usage</p>
+    @if(details != null)
+    {
+        <section style="background-color: #d3cccc;">
+            <div class="container-fluid"><br/>
+                <div class="row">
+                    <div class="col-4" id="appName">
+                        <img src="/Home/Show/?id=@details.Id" width="64" height="64" />
+                        <h4 id="title">@details.AppName</h4>
+                    </div>
+                    <div class="col-4">
+                    </div>
+                    <div class="col-4">
+                        <div class="row">
+                            <div class="col-4">
+                                <p style="color: #493b3b;">Usage</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4">
+                                <strong style="margin-left: 10%; color: #376137;">@details.ConnectedUsers</strong>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-4">
-                            <strong style="margin-left: 10%; color: #376137;">@details.ConnectedUsers</strong>
+                </div><br/>
+                <div class="row">
+                    <div class="col-4">
+                        <span style="margin-left: 5%; color: #4c4975;">Modified At</span>
+                    </div>
+                    <div class="col-4">
+                    </div>
+                    <div class="col-4">
+                        <p>@details.ModifiedAt.ToString("dd-MM-yyyy HH:mm:ss")</p>
+                    </div>
+                </div><hr/>
+                <h5 style="margin-left: 8%; color: #292b2c;">Description</h5>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div class="col-10">@Html.Raw(details.Description)</div>
+                    <div class="col-1"></div>
+                </div><hr/>
+                <h5 style="margin-left: 8%; color: #292b2c;">How to use</h5><br/>
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>ClientId:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="clientId" class="form-control form-control-sm" style="width: 300px;" type="text" value="@details.ClientId" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('clientId')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div><br />
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>ClientSecret:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="secret" class="form-control form-control-sm" style="width: 300px;" type="text" value="@details.ClientSecret" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('secret')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div><br />
+                @if(details.AppType == 1)
+                {
+                    <div class="row" style="margin-left: 15%; width: 64%;">
+                        <div class="col-2">
+                            <small>Auth Endpoint:</small>
+                        </div>
+                        <div class="col-8">
+                            <input id="auth" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)Home/Auth/" readonly />
+                        </div>
+                        <div class="col-2">
+                            <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('auth')" title="Copy">
+                                <span class="fa fa-solid fa-copy"></span>
+                            </a>
+                        </div>
+                    </div><br/>
+                    <div class="row" style="margin-left: 15%; width: 64%;">
+                        <div class="col-2">
+                            <small>Revoke Endpoint:</small>
+                        </div>
+                        <div class="col-8">
+                            <input id="revoke" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)Home/Revoke/" readonly />
+                        </div>
+                        <div class="col-2">
+                            <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('revoke')" title="Copy">
+                                <span class="fa fa-solid fa-copy"></span>
+                            </a>
+                        </div>
+                    </div><br/>
+                }
+                else
+                {
+                    <div class="row" style="margin-left: 15%; width: 64%;">
+                        <div class="col-2">
+                            <small>Auth Endpoint:</small>
+                        </div>
+                        <div class="col-8">
+                            <input id="auth" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/" readonly />
+                        </div>
+                        <div class="col-2">
+                            <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('auth')" title="Copy">
+                                <span class="fa fa-solid fa-copy"></span>
+                            </a>
                         </div>
                     </div>
+                    <br />
+                    <div class="row" style="margin-left: 15%; width: 64%;">
+                        <div class="col-2">
+                            <small>Refresh Endpoint:</small>
+                        </div>
+                        <div class="col-8">
+                            <input id="refresh" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/Refresh/" readonly />
+                        </div>
+                        <div class="col-2">
+                            <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('refresh')" title="Copy">
+                                <span class="fa fa-solid fa-copy"></span>
+                            </a>
+                        </div>
+                    </div><br/>
+                    <div class="row" style="margin-left: 15%; width: 64%;">
+                        <div class="col-2">
+                            <small>Revoke Endpoint:</small>
+                        </div>
+                        <div class="col-8">
+                            <input id="revoke" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/Revoke/" readonly />
+                        </div>
+                        <div class="col-2">
+                            <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('revoke')" title="Copy">
+                                <span class="fa fa-solid fa-copy"></span>
+                            </a>
+                        </div>
+                    </div><hr />
+                    <br/>
+                }
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="row" style="margin-top: 20%;">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Application does not exist!</h4>
+                    <p>Unfortunately, this application does not exists or is being in the trash.<br />Please check if application exist in the trash and restore it.</p>
+                    <hr>
+                    <p class="mb-0">Soon, the web site administrator will analyze if a problem has arisen regarding the deployment on the server.</p>
                 </div>
-            </div><br/>
-            <div class="row">
-                <div class="col-4">
-                    <span style="margin-left: 5%; color: #4c4975;">Modified At</span>
-                </div>
-                <div class="col-4">
-                </div>
-                <div class="col-4">
-                    <p>@details.ModifiedAt.ToString("dd-MM-yyyy HH:mm:ss")</p>
-                </div>
-            </div><hr/>
-            <h5 style="margin-left: 8%; color: #292b2c;">Description</h5>
-            <div class="row">
-                <div class="col-1"></div>
-                <div class="col-10">@Html.Raw(details.Description)</div>
-                <div class="col-1"></div>
-            </div><hr/>
-            <h5 style="margin-left: 8%; color: #292b2c;">How to use</h5><br/>
-            <div class="row" style="margin-left: 15%; width: 64%;">
-                <div class="col-2">
-                    <small>ClientId:</small>
-                </div>
-                <div class="col-8">
-                    <input id="clientId" class="form-control form-control-sm" style="width: 300px;" type="text" value="@details.ClientId" readonly />
-                </div>
-                <div class="col-2">
-                    <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('clientId')" title="Copy">
-                        <span class="fa fa-solid fa-copy"></span>
-                    </a>
-                </div>
-            </div><br />
-            <div class="row" style="margin-left: 15%; width: 64%;">
-                <div class="col-2">
-                    <small>ClientSecret:</small>
-                </div>
-                <div class="col-8">
-                    <input id="secret" class="form-control form-control-sm" style="width: 300px;" type="text" value="@details.ClientSecret" readonly />
-                </div>
-                <div class="col-2">
-                    <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('secret')" title="Copy">
-                        <span class="fa fa-solid fa-copy"></span>
-                    </a>
-                </div>
-            </div><br />
-            @if(details.AppType == 1)
-            {
-                <div class="row" style="margin-left: 15%; width: 64%;">
-                    <div class="col-2">
-                        <small>Auth Endpoint:</small>
-                    </div>
-                    <div class="col-8">
-                        <input id="auth" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)Home/Auth/" readonly />
-                    </div>
-                    <div class="col-2">
-                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('auth')" title="Copy">
-                            <span class="fa fa-solid fa-copy"></span>
-                        </a>
-                    </div>
-                </div><br/>
-                <div class="row" style="margin-left: 15%; width: 64%;">
-                    <div class="col-2">
-                        <small>Revoke Endpoint:</small>
-                    </div>
-                    <div class="col-8">
-                        <input id="revoke" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)Home/Revoke/" readonly />
-                    </div>
-                    <div class="col-2">
-                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('revoke')" title="Copy">
-                            <span class="fa fa-solid fa-copy"></span>
-                        </a>
-                    </div>
-                </div><br/>
-            }
-            else
-            {
-                <div class="row" style="margin-left: 15%; width: 64%;">
-                    <div class="col-2">
-                        <small>Auth Endpoint:</small>
-                    </div>
-                    <div class="col-8">
-                        <input id="auth" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/" readonly />
-                    </div>
-                    <div class="col-2">
-                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('auth')" title="Copy">
-                            <span class="fa fa-solid fa-copy"></span>
-                        </a>
-                    </div>
-                </div>
-                <br />
-                <div class="row" style="margin-left: 15%; width: 64%;">
-                    <div class="col-2">
-                        <small>Refresh Endpoint:</small>
-                    </div>
-                    <div class="col-8">
-                        <input id="refresh" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/Refresh/" readonly />
-                    </div>
-                    <div class="col-2">
-                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('refresh')" title="Copy">
-                            <span class="fa fa-solid fa-copy"></span>
-                        </a>
-                    </div>
-                </div><br/>
-                <div class="row" style="margin-left: 15%; width: 64%;">
-                    <div class="col-2">
-                        <small>Revoke Endpoint:</small>
-                    </div>
-                    <div class="col-8">
-                        <input id="revoke" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/Revoke/" readonly />
-                    </div>
-                    <div class="col-2">
-                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('revoke')" title="Copy">
-                            <span class="fa fa-solid fa-copy"></span>
-                        </a>
-                    </div>
-                </div><hr />
-                <br/>
-            }
+            </div>
+            <div class="col-2"></div>
         </div>
-    </section>
+    }
 }
 else
 {
-    <div class="row" style="margin-top: 20%;">
-        <div class="col-2"></div>
-        <div class="col-8">
-            <div class="alert alert-warning" role="alert">
-                <h4 class="alert-heading">Application does not exist!</h4>
-                <p>Unfortunately, this application does not exists or is being in the trash.<br />Please check if application exist in the trash and restore it.</p>
-                <hr>
-                <p class="mb-0">Soon, the web site administrator will analyze if a problem has arisen regarding the deployment on the server.</p>
-            </div>
-        </div>
-        <div class="col-2"></div>
+    <div class="alert alert-danger" style="width: 60%; margin-left: 15%; margin-top: 20%;" role="alert">
+        <h4 class="alert-heading">Sign in</h4>
+        <p>It must to log in, to manage your preferred applications or to add more features.</p>
+        <hr>
+        <p class="mb-0">You can connect easily by accessing this <a href="/Account/" title="Sign in" class="alert-link">log in</a>.</p>
     </div>
 }
