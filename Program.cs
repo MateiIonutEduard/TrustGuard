@@ -20,6 +20,9 @@ namespace TrustGuard
             builder.Services.AddEntityFrameworkNpgsql().AddDbContext<TrustGuardContext>(opt =>
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("TrustGuard")));
 
+            /* set up MongoDB server */
+            builder.Services.Configure<TrustGuardSettings>(builder.Configuration.GetSection("TrustGuardDB"));
+
             // get appSettings section
             builder.Services.Configure<AppSettings>(
                     builder.Configuration.GetSection(nameof(AppSettings)));
@@ -43,6 +46,9 @@ namespace TrustGuard
             // register smtp settings as singleton service
             builder.Services.AddSingleton<IAdminSettings>(sp =>
                 sp.GetRequiredService<IOptions<AdminSettings>>().Value);
+
+            /* declares log system service */
+            builder.Services.AddTransient<LogService>();
 
             /* declares admin service, as singleton service */
             builder.Services.AddSingleton<IAdminService, AdminService>();
