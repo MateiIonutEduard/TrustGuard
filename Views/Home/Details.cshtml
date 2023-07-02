@@ -77,6 +77,50 @@
                     </div>
                 </div><br/>
             }
+            else
+            {
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>Auth Endpoint:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="auth" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('auth')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div>
+                <br />
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>Refresh Endpoint:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="refresh" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/Refresh/" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('refresh')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div><br/>
+                <div class="row" style="margin-left: 15%; width: 64%;">
+                    <div class="col-2">
+                        <small>Revoke Endpoint:</small>
+                    </div>
+                    <div class="col-8">
+                        <input id="revoke" class="form-control form-control-sm" style="width: 300px;" type="text" value="@(settings.Issuer)api/Auth/Revoke/" readonly />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('revoke')" title="Copy">
+                            <span class="fa fa-solid fa-copy"></span>
+                        </a>
+                    </div>
+                </div>
+                <br/>
+            }
         </div>
     </section>
 }
