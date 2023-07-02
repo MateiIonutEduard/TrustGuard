@@ -134,12 +134,12 @@ namespace TrustGuard.Services
                 int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
                 string message = string.Empty;
 
-                if(result < 1)
-                {
-                    /* needs account username */
-                    Account account = await guardContext.Account
-                        .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+                /* needs account username */
+                Account account = await guardContext.Account
+                    .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
 
+                if (result < 1)
+                {
                     if(result == 0)
                     {
                         /* possibly suspicious */
@@ -154,6 +154,8 @@ namespace TrustGuard.Services
                     }
                 }
 
+                message = $"User {account.Username} has revoked access token successfully.";
+                await logService.CreateLogAsync(clientId, message, Models.LogLevel.Info);
                 return result;
             }
 
