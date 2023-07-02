@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="MongoDB\" />
     <Folder Include="Storage\Account\" />
     <Folder Include="Storage\Projects\" />
   </ItemGroup>
