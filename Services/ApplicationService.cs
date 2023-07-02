@@ -314,8 +314,9 @@ namespace TrustGuard.Services
             return application;
         }
 
-        public async Task<ApplicationDetailsModel> GetApplicationDetailsAsync(int id)
+        public async Task<ApplicationDetailsModel> GetApplicationDetailsAsync(int? id)
         {
+            if (id == null) return null;
             Application? app = await guardContext.Application
                 .FirstOrDefaultAsync(p => p.Id == id);
 

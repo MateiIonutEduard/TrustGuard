@@ -156,3 +156,13 @@ header, footer {
     color: #494963;
     background-color: #b0b3d5 !important;
 }
+
+#appName {
+    display: flex;
+}
+
+#title {
+    color: #534646;
+    margin-top: 3%;
+    margin-left: 5%;
+}

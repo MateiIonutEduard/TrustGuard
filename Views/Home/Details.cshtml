@@ -1,1 +1,50 @@
-﻿
+﻿@using TrustGuard.Models;
+@using TrustGuard.Services;
+@inject IApplicationService appService;
+
+@{
+    int? index = Context.Request.Query.ContainsKey("id") ? Convert.ToInt32(Context.Request.Query["id"]) : null;
+    ApplicationDetailsModel? details = await appService.GetApplicationDetailsAsync(index);
+}
+@if(details != null)
+{
+    <section style="background-color: #a2b8d3;">
+        <div class="container-fluid"><br/>
+            <div class="row">
+                <div class="col-4" id="appName">
+                    <img src="/Home/Show/?id=@details.Id" width="64" height="64" />
+                    <h4 id="title">@details.AppName</h4>
+                </div>
+                <div class="col-4">
+                </div>
+                <div class="col-4">
+                    <div class="row">
+                        <div class="col-4">
+                            <p style="color: #493b3b;">Usage</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <strong style="margin-left: 10%; color: #376137;">@details.ConnectedUsers</strong>
+                        </div>
+                    </div>
+                </div>
+            </div><br/>
+            <div class="row">
+                <div class="col-4">
+                    <span style="margin-left: 5%; color: #4c4975;">Modified At</span>
+                </div>
+                <div class="col-4">
+                </div>
+                <div class="col-4">
+                    <p>@details.ModifiedAt.ToString("dd-MM-yyyy HH:mm:ss")</p>
+                </div>
+            </div><hr/>
+            <div class="row">
+                <div class="col-1"></div>
+                <div class="col-10">@Html.Raw(details.Description)</div>
+                <div class="col-1"></div>
+            </div><hr/>
+        </div>
+    </section>
+}
