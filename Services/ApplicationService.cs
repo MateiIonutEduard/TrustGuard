@@ -17,16 +17,20 @@ namespace TrustGuard.Services
     {
         readonly IAppSettings appSettings;
         readonly IJwtSettings jwtSettings;
+
         readonly IAdminService adminService;
+        readonly LogService logService;
+
         readonly TrustGuardContext guardContext;
         readonly RandomNumberGenerator rand;
 
-        public ApplicationService(IAdminService adminService, IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
+        public ApplicationService(LogService logService, IAdminService adminService, IAppSettings appSettings, IJwtSettings jwtSettings, TrustGuardContext guardContext)
         { 
             this.guardContext = guardContext;
             rand = RandomNumberGenerator.Create();
             this.adminService = adminService;
 
+            this.logService = logService;
             this.appSettings = appSettings;
             this.jwtSettings = jwtSettings;
         }
@@ -128,6 +132,30 @@ namespace TrustGuard.Services
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
 
                 int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
+                string message = string.Empty;
+
+                /* needs account username */
+                Account account = await guardContext.Account
+                    .FirstOrDefaultAsync(e => e.Id == keyPair.AccountId);
+
+                if (result < 1)
+                {
+                    if(result == 0)
+                    {
+                        /* possibly suspicious */
+                        message = $"User {account.Username} requests authorization revocation, with outdated access token.";
+                        await logService.CreateLogAsync(clientId, message, Models.LogLevel.Warning);
+                    }
+                    else
+                    {
+                        /* be careful, this is dangerous */
+                        message = "Anonymous user try to send invalid signed token.";
+                        await logService.CreateLogAsync(clientId, message, Models.LogLevel.Danger);
+                    }
+                }
+
+                message = $"User {account.Username} has revoked access token successfully.";
+                await logService.CreateLogAsync(clientId, message, Models.LogLevel.Info);
                 return result;
             }
 
@@ -167,7 +195,9 @@ namespace TrustGuard.Services
 
                 EllipticCurve curve = new EllipticCurve(dpm.a, dpm.b, dpm.p, dpm.N);
                 TokenFactory tokenFactory = new TokenFactory(curve, dpm.basePoint);
+
                 int result = tokenFactory.VerifyToken(refreshToken, accessToken, validateLifetime);
+                string message = string.Empty;
 
                 /* if access token not expired */
                 if (result == 1)
@@ -205,7 +235,24 @@ namespace TrustGuard.Services
                         refresh_token = tokenModel.refresh_token
                     };
 
+                    /* create log, that everything work successful */
+                    string logBody = $"User {account.Username} successfully exchange token pair that needed at authorization.";
+                    await logService.CreateLogAsync(clientId, logBody, Models.LogLevel.Info);
+
                     return token;
+                }
+                else
+                if(result == 0)
+                {
+                    /* suspicious token pair exchange, with outdated access token */
+                    message = $"User {account.Username} sent outdated access token.";
+                    await logService.CreateLogAsync(clientId, message, Models.LogLevel.Warning);
+                }
+                else
+                {
+                    /* dangerous token pair exchange */
+                    message = "Anonymous user try to exchange token pair by using invalid signed token.";
+                    await logService.CreateLogAsync(clientId, message, Models.LogLevel.Danger);
                 }
             }
 
@@ -292,6 +339,10 @@ namespace TrustGuard.Services
                         /* create email body from template, after that get status code */
                         adminService.SendEmail(account.Address, "TrustGuard Support", body);
 
+                        /* create log, that everything work successful */
+                        string logBody = $"User {account.Username} successfully signed in to application.";
+                        await logService.CreateLogAsync(clientId, logBody, Models.LogLevel.Info);
+
                         TokenViewModel token = new TokenViewModel
                         {
                             access_token = tokenModel.access_token,
@@ -300,9 +351,15 @@ namespace TrustGuard.Services
 
                         return token;
                     }
+
+                    /* error status code */
+                    string logMessage = $"The application {clientId} was not found.";
+                    await logService.CreateLogAsync(clientId, logMessage, Models.LogLevel.Error);
                 }
             }
 
+            string msg = "Unknown user request anonymus authentication at this app.";
+            await logService.CreateLogAsync(clientId, msg, Models.LogLevel.Warning);
             return null;
         }
 
@@ -312,6 +369,77 @@ namespace TrustGuard.Services
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             return application;
+        }
+
+        public async Task<ApplicationDetailsModel> GetApplicationDetailsAsync(int? id, int? page)
+        {
+            if (id == null) return null;
+            int index = (page != null && page.Value >= 1) ? page.Value - 1 : 0;
+
+            Application? app = await guardContext.Application
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if(app != null)
+            {
+                /* main app details */
+                ApplicationDetailsModel details = new ApplicationDetailsModel
+                {
+                    Id = app.Id,
+                    AppName = app.AppName,
+                    ClientId = app.ClientId,
+                    AccountId = app.AccountId,
+                    Description = app.Description,
+                    ClientSecret = app.ClientSecret,
+                    ModifiedAt = (app.ModifiedAt != null ? app.ModifiedAt.Value : app.CreatedAt),
+                    IsDeleted = (app.IsDeleted != null ? app.IsDeleted.Value : false),
+                    AppType = app.AppType,
+                    ConnectedUsers = 0
+                };
+
+                /* unicity of user accounts */
+                var map = new HashSet<int>();
+
+                /* for each base point from elliptic curve */
+                List<BasePoint> points = await guardContext.BasePoint
+                    .Where(p => p.ApplicationId == app.Id)
+                    .ToListAsync();
+
+                foreach (BasePoint point in points)
+                {
+                    /* for all key pairs */
+                    List<KeyPair> keyPairs = await guardContext.KeyPair
+                        .Where(k => k.BasePointId == point.Id)
+                        .ToListAsync();
+
+                    foreach(KeyPair keyPair in keyPairs)
+                    {
+                        /* add unique user account */
+                        if(!map.Contains(keyPair.AccountId))
+                            map.Add(keyPair.AccountId);
+                    }
+                }
+
+                List<Log> logs = await logService.GetLogsByApplicationAsync(app.ClientId);
+                int counter = logs.Count;
+                int totalPages = counter >> 3;
+
+                if ((counter & 0x7) != 0)
+                    totalPages++;
+
+                details.Results = counter;
+                details.TotalPages = totalPages;
+
+                /* paginate results */
+                details.Logs = logs.Skip(8 * index)
+                    .Take(8).ToArray();
+
+                /* now, return app details model */
+                details.ConnectedUsers = map.Count;
+                return details;
+            }
+
+            // not found
+            return null;
         }
 
         public async Task<ApplicationResultModel> GetAppsByFilterAsync(bool complete, AppQueryFilter filter, string? userId, int? page)
@@ -694,6 +822,10 @@ namespace TrustGuard.Services
 
                 guardContext.BasePoint.Add(G);
                 await guardContext.SaveChangesAsync();
+
+                /* write new info log at database */
+                string body = $"You've created a new app, named {app.AppName}.";
+                await logService.CreateLogAsync(clientId, body, Models.LogLevel.Info);
 
                 /* send demand when the flag is activated */
                 if (appSettings.EnableDemandSending != null && appSettings.EnableDemandSending.Value)
