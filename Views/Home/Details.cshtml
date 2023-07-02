@@ -152,9 +152,9 @@
                 <div class="row">
                     <div class="col-1"></div>
                     <div class="col-9">
-                        <h5>All Logs</h5>
                         @if (details.Logs != null && details.Results > 0)
                         {
+                            <h5 style="color: #292b2c;">All Logs <span style="color: #6f6161;">(<span style="color: #677767;">@details.Results</span>)</span></h5><br/>
                             <table class="table table-light table-hover" id="products">
                                 <tbody>
                                     @foreach (Log log in details.Logs)
