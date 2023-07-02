@@ -48,6 +48,32 @@
                 <div class="col-1"></div>
             </div><hr/>
             <h5 style="margin-left: 8%; color: #292b2c;">How to use</h5><br/>
+            <div class="row" style="margin-left: 15%; width: 64%;">
+                <div class="col-2">
+                    <small>ClientId:</small>
+                </div>
+                <div class="col-8">
+                    <input id="clientId" class="form-control form-control-sm" style="width: 300px;" type="text" value="@details.ClientId" readonly />
+                </div>
+                <div class="col-2">
+                    <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('clientId')" title="Copy">
+                        <span class="fa fa-solid fa-copy"></span>
+                    </a>
+                </div>
+            </div><br />
+            <div class="row" style="margin-left: 15%; width: 64%;">
+                <div class="col-2">
+                    <small>ClientSecret:</small>
+                </div>
+                <div class="col-8">
+                    <input id="secret" class="form-control form-control-sm" style="width: 300px;" type="text" value="@details.ClientSecret" readonly />
+                </div>
+                <div class="col-2">
+                    <a class="btn btn-sm btn-primary" style="margin-left: -200px; border-radius: 50%; text-decoration: none;" onclick="CopyTo('secret')" title="Copy">
+                        <span class="fa fa-solid fa-copy"></span>
+                    </a>
+                </div>
+            </div><br />
             @if(details.AppType == 1)
             {
                 <div class="row" style="margin-left: 15%; width: 64%;">
