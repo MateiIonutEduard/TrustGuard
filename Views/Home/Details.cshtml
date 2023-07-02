@@ -181,8 +181,9 @@
                                                                 <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal">
                                                                     <i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel
                                                                 </button>
-                                                                <form action="#" method="post">
-                                                                    <input type="hidden" id="appId" name="appId" value="@log.Id" />
+                                                                <form action="/Log/" method="post">
+                                                                    <input type="hidden" id="appId" name="appId" value="@index" />
+                                                                    <input type="hidden" id="logId" name="logId" value="@log.Id" />
                                                                     <button class="btn btn-sm btn-danger" type="submit" title="Remove Log">
                                                                         <i class="fa fa-trash" style="color: white;" aria-hidden="true"></i>&nbsp;Remove
                                                                     </button>
