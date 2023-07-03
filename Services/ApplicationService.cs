@@ -497,7 +497,7 @@ namespace TrustGuard.Services
                 {
                     for(int i = 0; i < apps.Count; i++)
                     {
-                        if (!apps[i].AppName.StartsWith(filter.AppName))
+                        if (!apps[i].AppName.ToLower().StartsWith(filter.AppName.ToLower()))
                             marked[i] = true;
                     }
                 }
@@ -516,7 +516,7 @@ namespace TrustGuard.Services
                         projects.Add(apps[k]);
                 }
 
-                int counter = apps.Count;
+                int counter = projects.Count;
                 int totalPages = counter >> 3;
 
                 if ((counter & 0x7) != 0)
@@ -538,7 +538,7 @@ namespace TrustGuard.Services
                 {
                     Pages = totalPages,
                     ApplicationViewModels = list.ToArray(),
-                    Results = apps.Count
+                    Results = projects.Count
                 };
 
                 return result;
