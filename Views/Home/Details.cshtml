@@ -182,6 +182,45 @@
                                         <tr>
                                             <td id="appField">@log.Message</td>
                                             <td id="appField">@log.CreatedAt.ToString("dd-MM-yyyy HH:mm:ss")</td>
+                                            @{
+                                                LogLevel level = (LogLevel)log.LogLevel;
+                                            }
+                                            @if(level == LogLevel.Warning)
+                                            {
+                                                <td id="appField">
+                                                    <span title="Warning" style="color: #ffa500;" class="fa fa-exclamation-triangle"></span>
+                                                </td>
+                                            }
+                                            else if(level == LogLevel.Danger)
+                                            {
+                                                <td id="appField">
+                                                    <span title="Danger" class="fa fa-exclamation-circle text-danger"></span>
+                                                </td>
+                                            }
+                                            else if(level == LogLevel.Info)
+                                            {
+                                                <td id="appField">
+                                                    <span title="Info" class="fa fa-info-circle text-primary"></span>
+                                                </td>
+                                            }
+                                            else if(level == LogLevel.Fatal)
+                                            {
+                                                <td id="appField">
+                                                    <span title="Fatal" style="color: #e74a74;" class="fa fa-ban"></span>
+                                                </td>
+                                            }
+                                            else if(level == LogLevel.Error)
+                                            {
+                                                <td id="appField">
+                                                    <span title="Error" style="color: #fb5751;" class="fa fa-times-circle"></span>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td id="appField">
+                                                    <span title="All" class="fa fa-tasks text-success"></span>
+                                                </td>
+                                            }
                                             <td id="appField">
                                                 <button class="btn btn-sm" style="text-decoration: none;" title="Delete Log" data-bs-toggle="modal" data-bs-target="#removeAppModal_@log.Id">
                                                     <span class="fa fa-trash text-danger"></span>
