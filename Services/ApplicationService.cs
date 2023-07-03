@@ -321,6 +321,7 @@ namespace TrustGuard.Services
                         guardContext.KeyPair.Add(keyPair);
                         await guardContext.SaveChangesAsync();
 
+                    #if ENABLE_USER_WARN
                         /* get identification email template */
                         string message = File.ReadAllText($"./TrustAdmin/AreYou.txt");
                         int index = message.IndexOf('{');
@@ -338,6 +339,7 @@ namespace TrustGuard.Services
 
                         /* create email body from template, after that get status code */
                         adminService.SendEmail(account.Address, "TrustGuard Support", body);
+                    #endif
 
                         /* create log, that everything work successful */
                         string logBody = $"User {account.Username} successfully signed in to application.";
