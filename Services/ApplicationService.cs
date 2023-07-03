@@ -497,7 +497,7 @@ namespace TrustGuard.Services
                 {
                     for(int i = 0; i < apps.Count; i++)
                     {
-                        if (!apps[i].AppName.StartsWith(filter.AppName))
+                        if (!apps[i].AppName.ToLower().StartsWith(filter.AppName.ToLower()))
                             marked[i] = true;
                     }
                 }
