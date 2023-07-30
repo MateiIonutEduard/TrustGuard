@@ -221,7 +221,13 @@
                                                     <span title="All" class="fa fa-tasks text-success"></span>
                                                 </td>
                                             }
-                                            <td id="appField">
+                                            <td id="appField" style="display: flex; justify-content: flex-end;">
+                                                @if(level == LogLevel.Danger || level == LogLevel.Warning)
+                                                {
+                                                    <button class="btn btn-sm" style="text-decoration: none;" title="Schedule Task">
+                                                        <span class="fa fa-refresh text-success"></span>
+                                                    </button>
+                                                }
                                                 <button class="btn btn-sm" style="text-decoration: none;" title="Delete Log" data-bs-toggle="modal" data-bs-target="#removeAppModal_@log.Id">
                                                     <span class="fa fa-trash text-danger"></span>
                                                 </button>
