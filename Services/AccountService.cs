@@ -11,13 +11,17 @@ namespace TrustGuard.Services
 	{
 		readonly IAdminService adminService;
 		readonly ICryptoService cryptoService;
-		readonly TrustGuardContext guardContext;
 
-		public AccountService(TrustGuardContext guardContext, IAdminService adminService, ICryptoService cryptoService)
+		readonly TrustGuardContext guardContext;
+		readonly IAppSettings appSettings;
+
+        public AccountService(IAppSettings appSettings, TrustGuardContext guardContext, IAdminService adminService, ICryptoService cryptoService)
 		{
 			this.adminService = adminService;
 			this.cryptoService = cryptoService;
+
 			this.guardContext = guardContext;
+			this.appSettings = appSettings;
 		}
 
 		public async Task<bool> RemoveAccountAsync(int userId)
@@ -195,6 +199,23 @@ namespace TrustGuard.Services
 				{
 					/* lost password */
 					accountResponseModel.status = 0;
+
+					/* when enable signin trials flag is activated */
+					if (appSettings.EnableSigninTrials != null && appSettings.EnableSigninTrials.Value)
+					{
+						int signinTrials = account.SigninTrials != null
+							? account.SigninTrials.Value + 1 : 1;
+
+						if(signinTrials == appSettings.AccountSigninTrials.Value)
+						{
+							accountResponseModel.status = -2;
+                            signinTrials = 0;
+						}
+
+						/* update login trials */
+						account.SigninTrials = signinTrials;
+						await guardContext.SaveChangesAsync();
+					}
 				}
 				else
 				{
