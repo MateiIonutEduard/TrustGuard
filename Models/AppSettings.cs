@@ -8,5 +8,7 @@ namespace TrustGuard.Models
         public string salt { get; set; }
         public bool? EnableBrowserSupport { get; set; }
         public bool? EnableDemandSending { get; set; }
+        public bool? EnableSigninTrials { get; set; }
+        public int? AccountSigninTrials { get; set; }
     }
 }
