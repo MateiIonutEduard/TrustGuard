@@ -11,6 +11,7 @@ namespace TrustGuard.Data
         public string Address { get; set; }
         public string? Avatar { get; set; }
         public string? SecurityCode { get; set; }
+        public int? SigninTrials { get; set; }
         [ForeignKey("AccountId")]
         public virtual ICollection<Application> Applications { get; set; }
         [ForeignKey("AccountId")]
