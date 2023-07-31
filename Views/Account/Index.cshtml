@@ -3,7 +3,7 @@
 
 @{
 	ViewData["Title"] = "Sign In";
-	bool valid = Context.Request.Query.ContainsKey("FailCode") ? Convert.ToBoolean(Context.Request.Query["FailCode"]) : false;
+	int valid = Context.Request.Query.ContainsKey("FailCode") ? Convert.ToInt32(Context.Request.Query["FailCode"]) : 0;
 }
 <div class="container">
 	<div class="row">
@@ -20,9 +20,13 @@
 						<input type="email" id="address" name="address" class="form-control" placeholder="Adress" required autofocus><br />
 						<label for="password" class="sr-only">Password</label>
 						<input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
-						@if (valid)
+						@if (valid == -1)
 						{
 							<span style="color: #DC4C64; margin-left: 10%;">Wrong Password! <a href="/Account/Recover" style="color: #7a74cc !important; text-decoration: none;">Recover?</a></span>
+						}
+						else if(valid == 1)
+						{
+							<span style="color: #DC4C64; margin-left: 10%;">Wrong Password!</span>
 						}
 						<a href="/Account/Recover" style="color: #266fbb !important; margin-left: -10px; margin-top: 2%;" class="nav-link">Lost Password?</a>
 						<div class="row" style="margin-top: 5%;">

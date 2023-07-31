@@ -133,8 +133,9 @@ namespace TrustGuard.Controllers
 		{
 			AccountResponseModel accountResponseModel = await accountService.SignInAsync(accountRequestModel);
 
-			if (accountResponseModel.status < 0) return Redirect("/Account/Signup");
-			else if (accountResponseModel.status == 0) return Redirect("/Account/?FailCode=true");
+			if (accountResponseModel.status < -1) return Redirect("/Account/?FailCode=-1");
+			else if (accountResponseModel.status == -1) return Redirect("/Account/Signup");
+			else if (accountResponseModel.status == 0) return Redirect("/Account/?FailCode=1");
 			var claims = new Claim[]
 			{
 				new Claim("id", accountResponseModel.id.Value.ToString()),
