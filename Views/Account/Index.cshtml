@@ -1,10 +1,14 @@
 ﻿﻿@using TrustGuard.Models;
 @inject IAppSettings appSettings;
+@inject IHttpContextAccessor Accessor;
 @model AccountRequestModel;
 
 @{
 	ViewData["Title"] = "Sign In";
 	int valid = Context.Request.Query.ContainsKey("FailCode") ? Convert.ToInt32(Context.Request.Query["FailCode"]) : 0;
+	string? address = valid != 0 ? Accessor.HttpContext?.Session.GetString("address") : string.Empty;
+	string? password = valid != 0 ? Accessor.HttpContext?.Session.GetString("password") : string.Empty;
+	string borderStyle = valid != 0 ? "1px #cf3b3b solid" : "";
 }
 <div class="container">
 	<div class="row">
@@ -18,9 +22,9 @@
 						<img class="mb-4" src="/images/trustGuard.png" style="margin-left: 30%;" width="72" height="72">
 						<h4 class="h3 mb-3 font-weight-normal" style="margin-left: 30%;">Sign In</h4>
 						<label for="address" class="sr-only">Email address</label>
-						<input type="email" id="address" name="address" class="form-control" placeholder="Adress" required autofocus><br />
+						<input type="email" id="address" name="address" value="@address" class="form-control" placeholder="Adress" required autofocus><br />
 						<label for="password" class="sr-only">Password</label>
-						<input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+						<input type="password" id="password" name="password" value="@password" style="border: @borderStyle" class="form-control" placeholder="Password" required>
 						@if (valid == -1)
 						{
 							<span style="color: #DC4C64; margin-left: 10%;">Wrong Password! <a href="/Account/Recover" style="color: #7a74cc !important; text-decoration: none;">Recover?</a></span>

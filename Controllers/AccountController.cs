@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Security.Claims;
 using TrustGuard.Data;
 using TrustGuard.Models;
@@ -132,6 +133,15 @@ namespace TrustGuard.Controllers
 		public async Task<IActionResult> Signin(AccountRequestModel accountRequestModel)
 		{
 			AccountResponseModel accountResponseModel = await accountService.SignInAsync(accountRequestModel);
+			HttpContext.Session.SetString("address", accountRequestModel.address);
+			HttpContext.Session.SetString("password", accountRequestModel.password);
+
+			/* if logged in successfully */
+			if (accountResponseModel.status == 1)
+			{
+				HttpContext.Session.Remove("address");
+				HttpContext.Session.Remove("password");
+			}
 
 			if (accountResponseModel.status < -1) return Redirect("/Account/?FailCode=-1");
 			else if (accountResponseModel.status == -1) return Redirect("/Account/Signup");
