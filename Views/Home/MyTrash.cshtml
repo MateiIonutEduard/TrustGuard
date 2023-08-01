@@ -244,19 +244,19 @@
                                     <ul class="pagination">
                                         @if (mainPage > 1)
                                         {
-                                            <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">&lt;&lt;</a></li>
-                                            <li class="page-item"><a class="page-link" href="/Home/?page=@previousPage">@previousPage</a></li>
+                                            <li class="page-item"><a class="page-link" href="/Home/MyTrash/?page=@previousPage">&lt;&lt;</a></li>
+                                            <li class="page-item"><a class="page-link" href="/Home/MyTrash/?page=@previousPage">@previousPage</a></li>
                                         }
                                         <li class="page-item active"><a class="page-link" style="color: #ffa571 !important;">@mainPage</a></li>
 
                                         @if (nextPage <= result.Pages && mainPage < result.Pages)
                                         {
-                                            <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">@nextPage</a></li>
+                                            <li class="page-item"><a class="page-link" href="/Home/MyTrash/?page=@nextPage">@nextPage</a></li>
                                         }
 
                                         @if (nextPage <= result.Pages && mainPage < result.Pages)
                                         {
-                                            <li class="page-item"><a class="page-link" href="/Home/?page=@nextPage">&gt;&gt;</a></li>
+                                            <li class="page-item"><a class="page-link" href="/Home/MyTrash/?page=@nextPage">&gt;&gt;</a></li>
                                         }
                                     </ul>
                                 </nav>
