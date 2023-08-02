@@ -1,6 +1,6 @@
 ﻿Hi {##}!<br> 
 <p style='color: #272a35;'>
-    If you have not connected to this application,<br/> report by following this <a href='{##}' style='color: #93b6cc !important;'>link</a>.<br>
+    If you have not connected to this application,<br/> report that by following this <a href='{##}' style='color: #93b6cc !important;'>link</a>.<br>
     Have a nice day!
 </p><br/>
 <p style='color: #4a606d;'>
