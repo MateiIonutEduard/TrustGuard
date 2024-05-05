@@ -112,22 +112,28 @@ namespace TrustGuard.Controllers
 			string? userId = HttpContext.User?.Claims?
 				.FirstOrDefault(u => u.Type == "id")?.Value;
 
-			/* save tokens to database, save them in cookies after */
-			TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
-
-			/* remove access token and refresh token if exists */
-			if (Request.Cookies.ContainsKey("access_key")) Response.Cookies.Delete("access_token");
-			if (Request.Cookies.ContainsKey("refresh_token")) Response.Cookies.Delete("refresh_token");
-
-			if (token != null)
+            /* If user account is not authorized, go to login page. */
+            if (!string.IsNullOrEmpty(userId))
             {
-				/* save tokens and go back */
-				Response.Cookies.Append("access_token", token.access_token);
-                Response.Cookies.Append("refresh_token", token.refresh_token);
-                return Redirect(returnUrl);
+                /* save tokens to database, save them in cookies after */
+                TokenViewModel token = await applicationService.AuthenticateAsync(userId, clientId, clientSecret);
+
+                /* remove access token and refresh token if exists */
+                if (Request.Cookies.ContainsKey("access_key")) Response.Cookies.Delete("access_token");
+                if (Request.Cookies.ContainsKey("refresh_token")) Response.Cookies.Delete("refresh_token");
+
+                if (token != null)
+                {
+                    /* save tokens and go back */
+                    Response.Cookies.Append("access_token", token.access_token);
+                    Response.Cookies.Append("refresh_token", token.refresh_token);
+                    return Redirect(returnUrl);
+                }
+                else
+                    return NotFound();
             }
             else
-                return NotFound();
+                return Redirect("/Account/");
 		}
 
         [HttpPost]
