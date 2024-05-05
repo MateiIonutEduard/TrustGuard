@@ -130,7 +130,7 @@ namespace TrustGuard.Controllers
         }
 
         [HttpPost]
-		public async Task<IActionResult> Signin(AccountRequestModel accountRequestModel)
+		public async Task<IActionResult> Signin([FromForm]AccountRequestModel accountRequestModel, [FromQuery]string? returnUrl)
 		{
 			AccountResponseModel accountResponseModel = await accountService.SignInAsync(accountRequestModel);
 			HttpContext.Session.SetString("address", accountRequestModel.address);
@@ -156,7 +156,9 @@ namespace TrustGuard.Controllers
 			var identity = new ClaimsIdentity(claims, "User Identity");
 			var userPrincipal = new ClaimsPrincipal(new[] { identity });
 			await HttpContext.SignInAsync(userPrincipal);
-			return Redirect("/Home/");
+
+			if (!string.IsNullOrEmpty(returnUrl)) return Redirect($"/Home/Auth/?returnUrl={returnUrl}");
+            else return Redirect("/Home/");
 		}
 
 		[HttpPost]

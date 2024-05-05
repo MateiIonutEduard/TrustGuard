@@ -133,7 +133,7 @@ namespace TrustGuard.Controllers
                     return NotFound();
             }
             else
-                return Redirect("/Account/");
+                return Redirect($"/Account/?returnUrl={returnUrl}");
 		}
 
         [HttpPost]
